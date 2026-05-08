@@ -1,0 +1,347 @@
+{% extends 'base.html' %}
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Layout ── */
+.form-page { max-width: 860px; margin: 0 auto; }
+
+/* ── Page header ── */
+.fph {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1.75rem; flex-wrap: wrap; gap: 1rem;
+}
+.fph h2 { font-size: 1.35rem; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: .6rem; }
+.fph h2 i { color: #4f46e5; }
+
+/* ── Back btn ── */
+.btn-back {
+    display: inline-flex; align-items: center; gap: .45rem;
+    padding: .45rem 1rem; border-radius: 10px;
+    border: 1.5px solid #e2e8f0; background: #fff;
+    color: #475569; font-weight: 600; font-size: .82rem;
+    text-decoration: none; transition: all .2s;
+}
+.btn-back:hover { border-color: #4f46e5; color: #4f46e5; background: #e0e7ff; }
+
+/* ── Progress steps ── */
+.steps {
+    display: flex; align-items: center; gap: 0;
+    background: #fff; border-radius: 14px; padding: 1rem 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06); border: 1px solid #e2e8f0;
+    margin-bottom: 1.5rem; overflow-x: auto;
+}
+.step {
+    display: flex; align-items: center; gap: .55rem;
+    flex-shrink: 0; cursor: default;
+}
+.step-circle {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .75rem; font-weight: 800;
+    border: 2px solid #e2e8f0; color: #94a3b8; background: #f8fafc;
+    transition: all .3s;
+}
+.step.active .step-circle { background: #4f46e5; border-color: #4f46e5; color: #fff; box-shadow: 0 3px 10px rgba(79,70,229,.35); }
+.step.done .step-circle  { background: #10b981; border-color: #10b981; color: #fff; }
+.step-label { font-size: .78rem; font-weight: 600; color: #94a3b8; }
+.step.active .step-label { color: #4f46e5; }
+.step.done .step-label   { color: #10b981; }
+.step-line { flex: 1; height: 2px; background: #e2e8f0; min-width: 24px; margin: 0 .5rem; }
+.step-line.done { background: #10b981; }
+
+/* ── Section card ── */
+.fs {
+    background: #fff; border-radius: 16px; padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06); border: 1px solid #e2e8f0;
+    margin-bottom: 1.25rem;
+    transition: box-shadow .2s;
+}
+.fs:hover { box-shadow: 0 4px 20px rgba(0,0,0,.09); }
+.fs-head {
+    display: flex; align-items: center; gap: .65rem;
+    margin-bottom: 1.25rem; padding-bottom: .9rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+.fs-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .9rem; color: #fff; flex-shrink: 0;
+}
+.fs-head h6 { margin: 0; font-size: .85rem; font-weight: 700; color: #0f172a; }
+.fs-head small { color: #94a3b8; font-size: .73rem; display: block; margin-top: .1rem; }
+
+/* ── Form fields ── */
+.form-label { font-weight: 600; font-size: .78rem; color: #475569; margin-bottom: .35rem; display: block; }
+.req { color: #ef4444; margin-left: .15rem; }
+.form-control, .form-select {
+    border-radius: 10px; border: 1.5px solid #e2e8f0;
+    padding: .6rem .9rem; font-size: .875rem;
+    color: #0f172a; transition: all .2s; width: 100%;
+    background: #fff;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.1); outline: none;
+}
+.form-control::placeholder { color: #cbd5e1; }
+textarea.form-control { resize: vertical; min-height: 90px; }
+.input-group .form-control { border-radius: 0 10px 10px 0; }
+.input-group .form-control:focus { z-index: 1; }
+.ig-txt {
+    background: #f8fafc; border: 1.5px solid #e2e8f0;
+    color: #94a3b8; font-size: .8rem; font-weight: 600;
+    padding: 0 .85rem; display: flex; align-items: center;
+    border-right: none; border-radius: 10px 0 0 10px;
+}
+.ig-txt-r {
+    background: #f8fafc; border: 1.5px solid #e2e8f0;
+    color: #94a3b8; font-size: .8rem; font-weight: 600;
+    padding: 0 .85rem; display: flex; align-items: center;
+    border-left: none; border-radius: 0 10px 10px 0;
+}
+.field-error { color: #ef4444; font-size: .73rem; margin-top: .3rem; font-weight: 500; }
+.field-hint  { color: #94a3b8; font-size: .72rem; margin-top: .25rem; }
+
+/* ── Código auto-gen ── */
+.codigo-wrap { position: relative; }
+.codigo-tag {
+    position: absolute; right: .6rem; top: 50%; transform: translateY(-50%);
+    background: #e0e7ff; color: #4f46e5;
+    font-size: .65rem; font-weight: 700; padding: .15rem .5rem; border-radius: 20px;
+    pointer-events: none;
+}
+
+/* ── Costo preview ── */
+.costo-preview {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border: 1.5px solid #bbf7d0; border-radius: 10px;
+    padding: .65rem 1rem; display: flex; align-items: center; gap: .5rem;
+    font-size: .82rem; font-weight: 600; color: #047857; margin-top: .5rem;
+}
+
+/* ── Footer ── */
+.form-footer {
+    display: flex; justify-content: flex-end; align-items: center;
+    gap: .75rem; padding: 1.25rem 1.5rem;
+    background: #fff; border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06); border: 1px solid #e2e8f0;
+}
+.btn-cancel {
+    padding: .6rem 1.4rem; border-radius: 10px;
+    border: 1.5px solid #e2e8f0; background: #fff;
+    color: #475569; font-weight: 600; font-size: .875rem; cursor: pointer;
+    transition: all .2s;
+}
+.btn-cancel:hover { border-color: #ef4444; color: #ef4444; background: #fef2f2; }
+.btn-save {
+    padding: .65rem 1.6rem; border-radius: 10px; border: none;
+    background: linear-gradient(135deg, #4f46e5, #3b82f6);
+    color: #fff; font-weight: 700; font-size: .9rem; cursor: pointer;
+    display: inline-flex; align-items: center; gap: .5rem;
+    box-shadow: 0 4px 14px rgba(79,70,229,.35);
+    transition: all .2s;
+}
+.btn-save:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(79,70,229,.45); }
+.btn-save:active { transform: translateY(0); }
+
+/* ── Alert error ── */
+.alert-form {
+    background: #fef2f2; border: 1.5px solid #fecaca;
+    color: #b91c1c; border-radius: 12px; padding: .85rem 1.1rem;
+    display: flex; align-items: flex-start; gap: .65rem;
+    font-size: .85rem; font-weight: 500; margin-bottom: 1.25rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-page">
+
+    <!-- HEADER -->
+    <div class="fph">
+        <h2>
+            <i class="fas fa-plus-circle"></i>
+            {{ titulo }}
+        </h2>
+        <a href="{% url 'encomienda_lista' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <!-- STEPS -->
+    <div class="steps">
+        <div class="step done">
+            <div class="step-circle"><i class="fas fa-check" style="font-size:.65rem;"></i></div>
+            <span class="step-label">Identificación</span>
+        </div>
+        <div class="step-line done"></div>
+        <div class="step active">
+            <div class="step-circle">2</div>
+            <span class="step-label">Datos del envío</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+            <div class="step-circle">3</div>
+            <span class="step-label">Confirmación</span>
+        </div>
+    </div>
+
+    <form method="post" id="encForm">
+        {% csrf_token %}
+
+        <!-- ERROR GENERAL -->
+        {% if form.non_field_errors %}
+        <div class="alert-form">
+            <i class="fas fa-exclamation-circle" style="flex-shrink:0;margin-top:.1rem;"></i>
+            <div>{% for e in form.non_field_errors %}<p class="mb-0">{{ e }}</p>{% endfor %}</div>
+        </div>
+        {% endif %}
+
+        <!-- SECCIÓN 1: PAQUETE -->
+        <div class="fs">
+            <div class="fs-head">
+                <div class="fs-icon" style="background:linear-gradient(135deg,#4f46e5,#6d28d9);">
+                    <i class="fas fa-box-open"></i>
+                </div>
+                <div>
+                    <h6>Información del Paquete</h6>
+                    <small>Código único y descripción del contenido</small>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">{{ form.codigo.label }}<span class="req">*</span></label>
+                    <div class="codigo-wrap">
+                        {{ form.codigo }}
+                        <span class="codigo-tag">AUTO</span>
+                    </div>
+                    {% if form.codigo.errors %}<div class="field-error"><i class="fas fa-exclamation-circle me-1"></i>{{ form.codigo.errors|join:", " }}</div>{% endif %}
+                    <div class="field-hint">Generado automáticamente — puedes modificarlo</div>
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label">{{ form.descripcion.label }}<span class="req">*</span></label>
+                    {{ form.descripcion }}
+                    {% if form.descripcion.errors %}<div class="field-error">{{ form.descripcion.errors|join:", " }}</div>{% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 2: PERSONAS -->
+        <div class="fs">
+            <div class="fs-head">
+                <div class="fs-icon" style="background:linear-gradient(135deg,#3b82f6,#2563eb);">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div>
+                    <h6>Remitente y Destinatario</h6>
+                    <small>Quién envía y quién recibe el paquete</small>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">{{ form.remitente.label }}<span class="req">*</span></label>
+                    {{ form.remitente }}
+                    {% if form.remitente.errors %}<div class="field-error">{{ form.remitente.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">{{ form.destinatario.label }}<span class="req">*</span></label>
+                    {{ form.destinatario }}
+                    {% if form.destinatario.errors %}<div class="field-error">{{ form.destinatario.errors }}</div>{% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 3: LOGÍSTICA -->
+        <div class="fs">
+            <div class="fs-head">
+                <div class="fs-icon" style="background:linear-gradient(135deg,#10b981,#059669);">
+                    <i class="fas fa-route"></i>
+                </div>
+                <div>
+                    <h6>Logística y Costos</h6>
+                    <small>Ruta, peso y costo del envío</small>
+                </div>
+            </div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-5">
+                    <label class="form-label">{{ form.ruta.label }}<span class="req">*</span></label>
+                    {{ form.ruta }}
+                    {% if form.ruta.errors %}<div class="field-error">{{ form.ruta.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">{{ form.peso_kg.label }}<span class="req">*</span></label>
+                    <div class="input-group">
+                        {{ form.peso_kg }}
+                        <span class="ig-txt-r">kg</span>
+                    </div>
+                    {% if form.peso_kg.errors %}<div class="field-error">{{ form.peso_kg.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">{{ form.costo_envio.label }}<span class="req">*</span></label>
+                    <div class="input-group">
+                        <span class="ig-txt">S/</span>
+                        {{ form.costo_envio }}
+                    </div>
+                    {% if form.costo_envio.errors %}<div class="field-error">{{ form.costo_envio.errors }}</div>{% endif %}
+                    <div class="costo-preview" id="costoPreview" style="display:none;">
+                        <i class="fas fa-check-circle"></i>
+                        Costo: <strong id="costoVal">S/ 0.00</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">{{ form.fecha_entrega_est.label }}</label>
+                    <div class="input-group">
+                        <span class="ig-txt"><i class="far fa-calendar-alt"></i></span>
+                        {{ form.fecha_entrega_est }}
+                    </div>
+                    {% if form.fecha_entrega_est.errors %}<div class="field-error">{{ form.fecha_entrega_est.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label">{{ form.observaciones.label }}</label>
+                    {{ form.observaciones }}
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER CON BOTONES -->
+        <div class="form-footer">
+            <button type="button" class="btn-cancel" onclick="history.back()">
+                <i class="fas fa-times me-1"></i> Cancelar
+            </button>
+            <button type="submit" class="btn-save" id="submitBtn">
+                <i class="fas fa-save"></i> Guardar Encomienda
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Preview costo en tiempo real
+const costoInput = document.querySelector('[name="costo_envio"]');
+const costoPreview = document.getElementById('costoPreview');
+const costoVal = document.getElementById('costoVal');
+
+if (costoInput) {
+    costoInput.addEventListener('input', function () {
+        const v = parseFloat(this.value);
+        if (!isNaN(v) && v > 0) {
+            costoVal.textContent = 'S/ ' + v.toFixed(2);
+            costoPreview.style.display = 'flex';
+        } else {
+            costoPreview.style.display = 'none';
+        }
+    });
+}
+
+// Spinner al enviar
+document.getElementById('encForm')?.addEventListener('submit', function () {
+    const btn = document.getElementById('submitBtn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+    btn.disabled = true;
+});
+</script>
+{% endblock %}

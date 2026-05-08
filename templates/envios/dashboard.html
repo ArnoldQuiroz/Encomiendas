@@ -1,0 +1,308 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard | Encomiendas{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Header ── */
+.dh {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #2563eb 100%);
+    border-radius: 20px;
+    padding: 2rem 2.5rem;
+    color: #fff;
+    margin-bottom: 1.75rem;
+    position: relative;
+    overflow: hidden;
+}
+.dh::before {
+    content:''; position:absolute; top:-50px; right:-30px;
+    width:200px; height:200px; border-radius:50%;
+    background:rgba(255,255,255,0.07);
+}
+.dh::after {
+    content:''; position:absolute; bottom:-70px; right:100px;
+    width:250px; height:250px; border-radius:50%;
+    background:rgba(255,255,255,0.04);
+}
+.dh h2 { font-size:1.5rem; font-weight:800; margin:0 0 .25rem; }
+.dh p  { margin:0; opacity:.8; font-size:.875rem; }
+.dh-btns { position:relative; z-index:1; display:flex; gap:.6rem; flex-wrap:wrap; }
+.dh-btn {
+    display:inline-flex; align-items:center; gap:.5rem;
+    padding:.55rem 1.15rem; border-radius:10px;
+    font-weight:700; font-size:.82rem; text-decoration:none;
+    border:1.5px solid rgba(255,255,255,.35);
+    color:#fff; background:rgba(255,255,255,.15);
+    transition:all .2s;
+}
+.dh-btn:hover { background:rgba(255,255,255,.28); color:#fff; transform:translateY(-2px); }
+.dh-btn.solid { background:#fff; color:#4f46e5; border-color:#fff; }
+.dh-btn.solid:hover { background:#f0f0ff; color:#3730a3; }
+
+/* ── Stat cards ── */
+.sc {
+    background:#fff; border-radius:16px; padding:1.35rem 1.5rem;
+    box-shadow:0 2px 12px rgba(0,0,0,.07);
+    border:1px solid #e2e8f0;
+    display:flex; align-items:center; gap:1.1rem;
+    position:relative; overflow:hidden;
+    transition:transform .25s, box-shadow .25s;
+    cursor:default;
+}
+.sc:hover { transform:translateY(-5px); box-shadow:0 8px 28px rgba(0,0,0,.12); }
+.sc-ico {
+    width:56px; height:56px; border-radius:14px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.3rem; color:#fff; flex-shrink:0;
+    box-shadow:0 4px 14px rgba(0,0,0,.18);
+}
+.sc-num {
+    font-size:2rem; font-weight:800; color:#0f172a;
+    line-height:1; margin-bottom:.2rem;
+}
+.sc-lbl {
+    font-size:.7rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:.07em; color:#94a3b8;
+}
+.sc::after {
+    content:''; position:absolute; top:-20px; right:-20px;
+    width:90px; height:90px; border-radius:50%;
+    background:var(--c); opacity:.07;
+}
+
+/* ── Section card ── */
+.sec {
+    background:#fff; border-radius:16px;
+    box-shadow:0 2px 12px rgba(0,0,0,.07);
+    border:1px solid #e2e8f0; overflow:hidden;
+}
+.sec-head {
+    padding:1.1rem 1.5rem; border-bottom:1px solid #f1f5f9;
+    display:flex; align-items:center; justify-content:space-between; gap:1rem;
+}
+.sec-title {
+    font-size:.9rem; font-weight:700; color:#0f172a;
+    margin:0; display:flex; align-items:center; gap:.5rem;
+}
+.sec-title i { color:#4f46e5; }
+
+/* ── Table ── */
+.table { margin:0; }
+.table thead th {
+    background:#f8fafc; font-size:.68rem; font-weight:700;
+    text-transform:uppercase; letter-spacing:.07em; color:#94a3b8;
+    border-bottom:1px solid #e2e8f0; padding:.85rem 1.25rem;
+}
+.table tbody td {
+    padding:.9rem 1.25rem; vertical-align:middle;
+    border-bottom:1px solid #f1f5f9; font-size:.875rem; color:#475569;
+}
+.table tbody tr:last-child td { border-bottom:none; }
+.table tbody tr { transition:background .15s; cursor:pointer; }
+.table tbody tr:hover { background:#f8fafc; }
+
+/* ── Badges ── */
+.bs {
+    display:inline-flex; align-items:center; gap:.3rem;
+    padding:.28rem .7rem; border-radius:20px;
+    font-size:.68rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+}
+.bs-dot { width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
+.bs-PE { background:#f1f5f9; color:#475569; }
+.bs-TR { background:#eff6ff; color:#1d4ed8; }
+.bs-DE { background:#fffbeb; color:#b45309; }
+.bs-EN { background:#ecfdf5; color:#047857; }
+.bs-DV { background:#fef2f2; color:#b91c1c; }
+
+/* ── Avatar ── */
+.av {
+    width:30px; height:30px; border-radius:50%;
+    background:linear-gradient(135deg,#4f46e5,#3b82f6);
+    color:#fff; font-size:.7rem; font-weight:800;
+    display:inline-flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+}
+
+/* ── Empty state ── */
+.es { text-align:center; padding:3.5rem 2rem; }
+.es-icon {
+    width:72px; height:72px; border-radius:18px;
+    background:#e0e7ff; color:#4f46e5;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.8rem; margin:0 auto 1.1rem;
+}
+.es h6 { font-weight:700; color:#0f172a; margin-bottom:.3rem; }
+.es p  { color:#94a3b8; font-size:.82rem; margin:0; }
+
+/* ── Btn ── */
+.btn-p {
+    background:linear-gradient(135deg,#4f46e5,#3b82f6);
+    border:none; color:#fff; font-weight:700;
+    border-radius:10px; padding:.5rem 1.1rem; font-size:.82rem;
+    display:inline-flex; align-items:center; gap:.4rem;
+    text-decoration:none; transition:all .2s;
+    box-shadow:0 3px 10px rgba(79,70,229,.35);
+}
+.btn-p:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(79,70,229,.45); color:#fff; }
+.btn-o {
+    border:1.5px solid #4f46e5; color:#4f46e5; background:transparent;
+    font-weight:700; border-radius:10px; padding:.4rem 1rem; font-size:.8rem;
+    display:inline-flex; align-items:center; gap:.4rem;
+    text-decoration:none; transition:all .2s;
+}
+.btn-o:hover { background:#4f46e5; color:#fff; transform:translateY(-1px); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- HEADER -->
+<div class="dh mb-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3" style="position:relative;z-index:1;">
+        <div>
+            <h2><i class="fas fa-tachometer-alt me-2"></i>Dashboard General</h2>
+            <p>Bienvenido, <strong>{{ user.username }}</strong> — resumen del sistema en tiempo real</p>
+        </div>
+        <div class="dh-btns">
+            <a href="{% url 'encomienda_crear' %}" class="dh-btn solid">
+                <i class="fas fa-plus"></i> Nueva encomienda
+            </a>
+            <a href="{% url 'encomienda_lista' %}" class="dh-btn">
+                <i class="fas fa-list"></i> Ver todas
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- STAT CARDS -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-sm-6">
+        <div class="sc" style="--c:#4f46e5;">
+            <div class="sc-ico" style="background:linear-gradient(135deg,#4f46e5,#6d28d9);">
+                <i class="fas fa-shipping-fast"></i>
+            </div>
+            <div>
+                <div class="sc-num" data-target="{{ total_activas }}">{{ total_activas }}</div>
+                <div class="sc-lbl">Activas</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="sc" style="--c:#3b82f6;">
+            <div class="sc-ico" style="background:linear-gradient(135deg,#3b82f6,#2563eb);">
+                <i class="fas fa-truck"></i>
+            </div>
+            <div>
+                <div class="sc-num" data-target="{{ en_transito }}">{{ en_transito }}</div>
+                <div class="sc-lbl">En tránsito</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="sc" style="--c:#ef4444;">
+            <div class="sc-ico" style="background:linear-gradient(135deg,#ef4444,#dc2626);">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div>
+                <div class="sc-num" data-target="{{ con_retraso }}">{{ con_retraso }}</div>
+                <div class="sc-lbl">Con retraso</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="sc" style="--c:#10b981;">
+            <div class="sc-ico" style="background:linear-gradient(135deg,#10b981,#059669);">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div>
+                <div class="sc-num" data-target="{{ entregadas_hoy }}">{{ entregadas_hoy }}</div>
+                <div class="sc-lbl">Entregadas hoy</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TABLA -->
+<div class="sec">
+    <div class="sec-head">
+        <h6 class="sec-title">
+            <i class="fas fa-history"></i> Últimas encomiendas registradas
+        </h6>
+        <a href="{% url 'encomienda_lista' %}" class="btn-o">
+            Ver todas <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-4">Código</th>
+                    <th>Remitente</th>
+                    <th>Destino</th>
+                    <th>Estado</th>
+                    <th>Costo</th>
+                    <th class="text-end pe-4">Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for enc in ultimas %}
+                <tr class="fila-link" data-href="{% url 'encomienda_detalle' enc.pk %}">
+                    <td class="ps-4">
+                        <span class="font-monospace fw-bold text-primary" style="font-size:.8rem;">{{ enc.codigo }}</span>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="av">{{ enc.remitente.nombres|first|upper }}</span>
+                            <span class="fw-semibold" style="color:#0f172a;">{{ enc.remitente.nombre_completo }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <i class="fas fa-map-marker-alt text-danger me-1" style="font-size:.75rem;"></i>
+                        {{ enc.ruta.destino }}
+                    </td>
+                    <td>
+                        <span class="bs bs-{{ enc.estado }}">
+                            <span class="bs-dot"></span>{{ enc.get_estado_display }}
+                        </span>
+                    </td>
+                    <td><strong style="color:#059669;">S/ {{ enc.costo_envio }}</strong></td>
+                    <td class="text-end pe-4">
+                        <a href="{% url 'encomienda_detalle' enc.pk %}" class="btn-o" onclick="event.stopPropagation()" style="font-size:.75rem;padding:.3rem .8rem;">
+                            <i class="fas fa-eye"></i> Ver
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="p-0 border-0">
+                        <div class="es">
+                            <div class="es-icon"><i class="fas fa-inbox"></i></div>
+                            <h6>Sin encomiendas registradas</h6>
+                            <p>Crea tu primera encomienda para verla aquí</p>
+                            <a href="{% url 'encomienda_crear' %}" class="btn-p mt-3">
+                                <i class="fas fa-plus"></i> Crear encomienda
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.sc-num[data-target]').forEach(el => {
+    const target = parseInt(el.dataset.target) || 0;
+    if (target === 0) return;
+    let n = 0, step = Math.max(1, Math.ceil(target / 40));
+    const t = setInterval(() => {
+        n = Math.min(n + step, target);
+        el.textContent = n;
+        if (n >= target) clearInterval(t);
+    }, 25);
+});
+</script>
+{% endblock %}

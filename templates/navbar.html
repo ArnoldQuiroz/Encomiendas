@@ -1,0 +1,73 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'dashboard' %}">
+            <div class="brand-icon"><i class="fas fa-shipping-fast"></i></div>
+            Encomiendas
+        </a>
+
+        {% if user.is_authenticated %}
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navMenu">
+            <ul class="navbar-nav me-auto gap-1">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                       href="{% url 'dashboard' %}">
+                        <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        {% if nav_activas > 0 %}
+                        <span class="badge bg-white text-primary ms-1">{{ nav_activas }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'encomienda_lista' %}active{% endif %}"
+                       href="{% url 'encomienda_lista' %}">
+                        <i class="fas fa-boxes me-1"></i>Encomiendas
+                        {% if nav_retraso > 0 %}
+                        <span class="badge bg-danger ms-1">{{ nav_retraso }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'encomienda_crear' %}active{% endif %}"
+                       href="{% url 'encomienda_crear' %}">
+                        <i class="fas fa-plus me-1"></i>Nueva
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2"
+                       href="#" role="button" data-bs-toggle="dropdown">
+                        <div class="user-avatar">{{ user.username|first|upper }}</div>
+                        <span>{{ user.username }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <span class="dropdown-item-text text-muted" style="font-size:0.75rem;padding:0.4rem 0.75rem;">
+                                Conectado como <strong>{{ user.username }}</strong>
+                            </span>
+                        </li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li>
+                            <form method="post" action="{% url 'logout' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        {% else %}
+        <a href="{% url 'login' %}" class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:white;border:1.5px solid rgba(255,255,255,0.4);">
+            <i class="fas fa-sign-in-alt me-1"></i>Iniciar sesión
+        </a>
+        {% endif %}
+    </div>
+</nav>

@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+{% block title %}Encomiendas{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Page header ── */
+.ph { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem; }
+.ph h2 { font-size:1.35rem; font-weight:800; color:#0f172a; margin:0; display:flex; align-items:center; gap:.6rem; }
+.ph h2 i { color:#4f46e5; }
+
+/* ── Filter card ── */
+.fc {
+    background:#fff; border-radius:16px; padding:1.1rem 1.5rem;
+    box-shadow:0 2px 12px rgba(0,0,0,.06); border:1px solid #e2e8f0;
+    margin-bottom:1.25rem;
+}
+.fc .form-control, .fc .form-select {
+    border-radius:10px; border:1.5px solid #e2e8f0;
+    font-size:.875rem; padding:.55rem .9rem; transition:all .2s;
+}
+.fc .form-control:focus, .fc .form-select:focus {
+    border-color:#4f46e5; box-shadow:0 0 0 3px rgba(79,70,229,.1);
+}
+.fc .search-wrap { position:relative; }
+.fc .search-wrap .si {
+    position:absolute; left:.85rem; top:50%; transform:translateY(-50%);
+    color:#94a3b8; font-size:.8rem; pointer-events:none;
+}
+.fc .search-wrap .form-control { padding-left:2.3rem; }
+
+/* ── Table card ── */
+.tc {
+    background:#fff; border-radius:16px;
+    box-shadow:0 2px 12px rgba(0,0,0,.06); border:1px solid #e2e8f0;
+    overflow:hidden;
+}
+.tc-head {
+    padding:.9rem 1.5rem; border-bottom:1px solid #f1f5f9;
+    display:flex; align-items:center; justify-content:space-between; gap:1rem;
+}
+.tc-title { font-size:.85rem; font-weight:700; color:#475569; margin:0; }
+.tc-count {
+    font-size:.75rem; font-weight:700; background:#e0e7ff; color:#4f46e5;
+    padding:.2rem .65rem; border-radius:20px;
+}
+.table { margin:0; }
+.table thead th {
+    background:#f8fafc; font-size:.67rem; font-weight:700;
+    text-transform:uppercase; letter-spacing:.07em; color:#94a3b8;
+    border-bottom:1px solid #e2e8f0; padding:.8rem 1.1rem; white-space:nowrap;
+}
+.table tbody td {
+    padding:.85rem 1.1rem; vertical-align:middle;
+    border-bottom:1px solid #f1f5f9; font-size:.875rem; color:#475569;
+    transition:background .12s;
+}
+.table tbody tr:last-child td { border-bottom:none; }
+.table tbody tr { cursor:pointer; }
+.table tbody tr:hover td { background:#f8fafc; color:#0f172a; }
+
+/* ── Badges ── */
+.bs {
+    display:inline-flex; align-items:center; gap:.3rem;
+    padding:.28rem .7rem; border-radius:20px;
+    font-size:.67rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+}
+.bs-dot { width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
+.bs-PE { background:#f1f5f9; color:#475569; }
+.bs-TR { background:#eff6ff; color:#1d4ed8; }
+.bs-DE { background:#fffbeb; color:#b45309; }
+.bs-EN { background:#ecfdf5; color:#047857; }
+.bs-DV { background:#fef2f2; color:#b91c1c; }
+
+/* ── Retraso badge ── */
+.bs-retraso {
+    display:inline-flex; align-items:center; gap:.25rem;
+    font-size:.65rem; font-weight:700; color:#b91c1c;
+    background:#fef2f2; padding:.15rem .5rem; border-radius:20px;
+}
+
+/* ── Avatar ── */
+.av {
+    width:30px; height:30px; border-radius:50%;
+    background:linear-gradient(135deg,#4f46e5,#3b82f6);
+    color:#fff; font-size:.7rem; font-weight:800;
+    display:inline-flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+}
+
+/* ── Ruta pill ── */
+.ruta-pill {
+    display:inline-flex; align-items:center; gap:.3rem;
+    font-size:.78rem; color:#475569;
+}
+.ruta-pill .arrow { color:#cbd5e1; font-size:.65rem; }
+
+/* ── Btns ── */
+.btn-p {
+    background:linear-gradient(135deg,#4f46e5,#3b82f6);
+    border:none; color:#fff; font-weight:700;
+    border-radius:10px; padding:.5rem 1.1rem; font-size:.82rem;
+    display:inline-flex; align-items:center; gap:.4rem;
+    text-decoration:none; transition:all .2s;
+    box-shadow:0 3px 10px rgba(79,70,229,.3);
+}
+.btn-p:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(79,70,229,.4); color:#fff; }
+.btn-o {
+    border:1.5px solid #e2e8f0; color:#475569; background:#fff;
+    font-weight:600; border-radius:8px; padding:.3rem .8rem; font-size:.75rem;
+    display:inline-flex; align-items:center; gap:.35rem;
+    text-decoration:none; transition:all .2s;
+}
+.btn-o:hover { border-color:#4f46e5; color:#4f46e5; background:#e0e7ff; }
+.btn-f {
+    background:linear-gradient(135deg,#4f46e5,#3b82f6);
+    border:none; color:#fff; font-weight:700;
+    border-radius:10px; padding:.55rem 1.2rem; font-size:.82rem;
+    display:inline-flex; align-items:center; gap:.4rem; cursor:pointer; transition:all .2s;
+}
+.btn-f:hover { transform:translateY(-1px); opacity:.92; }
+.btn-clear {
+    border:1.5px solid #e2e8f0; background:#fff; color:#94a3b8;
+    border-radius:10px; padding:.55rem 1rem; font-size:.82rem;
+    display:inline-flex; align-items:center; gap:.4rem;
+    text-decoration:none; transition:all .2s; cursor:pointer;
+}
+.btn-clear:hover { border-color:#ef4444; color:#ef4444; }
+
+/* ── Empty ── */
+.es { text-align:center; padding:4rem 2rem; }
+.es-icon {
+    width:72px; height:72px; border-radius:18px;
+    background:#e0e7ff; color:#4f46e5;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.8rem; margin:0 auto 1rem;
+}
+.es h6 { font-weight:700; color:#0f172a; margin-bottom:.3rem; }
+.es p  { color:#94a3b8; font-size:.82rem; margin:0; }
+
+/* ── Pagination ── */
+.pag { display:flex; align-items:center; gap:.25rem; }
+.pag a, .pag span {
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:34px; height:34px; border-radius:8px;
+    font-size:.78rem; font-weight:600; text-decoration:none;
+    border:1.5px solid #e2e8f0; color:#475569; transition:all .15s;
+}
+.pag a:hover { border-color:#4f46e5; color:#4f46e5; background:#e0e7ff; }
+.pag .active {
+    background:#4f46e5; border-color:#4f46e5; color:#fff;
+    box-shadow:0 2px 8px rgba(79,70,229,.35);
+}
+.pag .disabled { opacity:.4; pointer-events:none; }
+
+/* ── Active filter tag ── */
+.filter-tag {
+    display:inline-flex; align-items:center; gap:.4rem;
+    background:#e0e7ff; color:#4f46e5;
+    padding:.2rem .7rem; border-radius:20px;
+    font-size:.75rem; font-weight:600;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- PAGE HEADER -->
+<div class="ph">
+    <h2><i class="fas fa-boxes"></i> Encomiendas</h2>
+    <a href="{% url 'encomienda_crear' %}" class="btn-p">
+        <i class="fas fa-plus"></i> Nueva Encomienda
+    </a>
+</div>
+
+<!-- FILTROS -->
+<div class="fc">
+    <form method="get" id="filterForm">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-6">
+                <div class="search-wrap">
+                    <i class="fas fa-search si"></i>
+                    <input type="text" name="q" id="searchInput" value="{{ q }}"
+                           class="form-control" placeholder="Buscar por código, apellidos del cliente..."
+                           autocomplete="off">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="estado" class="form-select" onchange="this.form.submit()">
+                    <option value="">Todos los estados</option>
+                    {% for valor, etiqueta in estados %}
+                    <option value="{{ valor }}" {% if estado_activo == valor %}selected{% endif %}>{{ etiqueta }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn-f w-100">
+                    <i class="fas fa-filter"></i> Filtrar
+                </button>
+            </div>
+            <div class="col-md-1">
+                {% if q or estado_activo %}
+                <a href="{% url 'encomienda_lista' %}" class="btn-clear w-100" title="Limpiar filtros">
+                    <i class="fas fa-times"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% if q or estado_activo %}
+        <div class="mt-2 d-flex align-items-center gap-2">
+            <span style="font-size:.75rem;color:#94a3b8;">Filtros activos:</span>
+            {% if q %}<span class="filter-tag"><i class="fas fa-search" style="font-size:.65rem;"></i> "{{ q }}"</span>{% endif %}
+            {% if estado_activo %}<span class="filter-tag"><i class="fas fa-tag" style="font-size:.65rem;"></i> {{ estado_activo }}</span>{% endif %}
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+<!-- TABLA -->
+<div class="tc">
+    <div class="tc-head">
+        <span class="tc-title">
+            <i class="fas fa-list me-1" style="color:#4f46e5;font-size:.8rem;"></i>
+            Listado de encomiendas
+        </span>
+        <span class="tc-count">{{ encomiendas.paginator.count }} registros</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-4">Código</th>
+                    <th>Remitente</th>
+                    <th>Ruta</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th>Costo</th>
+                    <th class="text-end pe-4">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tablaBody">
+                {% for enc in encomiendas %}
+                <tr class="fila-link" data-href="{% url 'encomienda_detalle' enc.pk %}">
+                    <td class="ps-4">
+                        <span class="font-monospace fw-bold text-primary" style="font-size:.8rem;">{{ enc.codigo }}</span>
+                        {% if enc.tiene_retraso %}
+                        <span class="bs-retraso ms-1"><i class="fas fa-clock"></i> Retraso</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="av">{{ enc.remitente.nombres|first|upper }}</span>
+                            <div>
+                                <div class="fw-semibold" style="color:#0f172a;font-size:.85rem;">{{ enc.remitente.nombre_completo }}</div>
+                                <div style="font-size:.72rem;color:#94a3b8;">→ {{ enc.destinatario.nombre_completo }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="ruta-pill">
+                            <i class="fas fa-map-marker-alt text-danger" style="font-size:.7rem;"></i>
+                            {{ enc.ruta.origen }}
+                            <span class="arrow">→</span>
+                            <i class="fas fa-flag-checkered text-success" style="font-size:.7rem;"></i>
+                            {{ enc.ruta.destino }}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="bs bs-{{ enc.estado }}">
+                            <span class="bs-dot"></span>{{ enc.get_estado_display }}
+                        </span>
+                    </td>
+                    <td style="font-size:.8rem;">
+                        <i class="far fa-calendar-alt me-1" style="color:#94a3b8;"></i>
+                        {{ enc.fecha_registro|date:'d M Y' }}
+                    </td>
+                    <td>
+                        <strong style="color:#059669;font-size:.875rem;">S/ {{ enc.costo_envio }}</strong>
+                    </td>
+                    <td class="text-end pe-4">
+                        <a href="{% url 'encomienda_detalle' enc.pk %}"
+                           class="btn-o" onclick="event.stopPropagation()">
+                            <i class="fas fa-eye"></i> Ver
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="p-0 border-0">
+                        <div class="es">
+                            <div class="es-icon"><i class="fas fa-search"></i></div>
+                            <h6>No se encontraron encomiendas</h6>
+                            <p>Intenta cambiar los filtros o registra una nueva encomienda</p>
+                            <a href="{% url 'encomienda_crear' %}" class="btn-p mt-3" style="display:inline-flex;">
+                                <i class="fas fa-plus"></i> Nueva encomienda
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PAGINACIÓN -->
+    {% if encomiendas.has_other_pages %}
+    <div style="padding:1rem 1.5rem;border-top:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
+        <span style="font-size:.8rem;color:#94a3b8;">
+            Mostrando página <strong style="color:#0f172a;">{{ encomiendas.number }}</strong>
+            de <strong style="color:#0f172a;">{{ encomiendas.paginator.num_pages }}</strong>
+        </span>
+        <div class="pag">
+            {% if encomiendas.has_previous %}
+            <a href="?page={{ encomiendas.previous_page_number }}&q={{ q }}&estado={{ estado_activo }}">
+                <i class="fas fa-chevron-left" style="font-size:.65rem;"></i>
+            </a>
+            {% endif %}
+            {% for i in encomiendas.paginator.page_range %}
+                {% if encomiendas.number == i %}
+                <span class="active">{{ i }}</span>
+                {% elif i >= encomiendas.number|add:"-2" and i <= encomiendas.number|add:"2" %}
+                <a href="?page={{ i }}&q={{ q }}&estado={{ estado_activo }}">{{ i }}</a>
+                {% endif %}
+            {% endfor %}
+            {% if encomiendas.has_next %}
+            <a href="?page={{ encomiendas.next_page_number }}&q={{ q }}&estado={{ estado_activo }}">
+                <i class="fas fa-chevron-right" style="font-size:.65rem;"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Búsqueda en tiempo real (debounce 400ms)
+let timer;
+document.getElementById('searchInput')?.addEventListener('input', function () {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+        document.getElementById('filterForm').submit();
+    }, 400);
+});
+</script>
+{% endblock %}
