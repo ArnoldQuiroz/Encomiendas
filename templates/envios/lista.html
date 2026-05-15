@@ -180,7 +180,7 @@
                 <div class="search-wrap">
                     <i class="fas fa-search si"></i>
                     <input type="text" name="q" id="searchInput" value="{{ q }}"
-                           class="form-control" placeholder="Buscar por código, apellidos del cliente..."
+                           class="form-control" placeholder="Buscar por código, DNI, nombre, apellido, ruta, ciudad..."
                            autocomplete="off">
                 </div>
             </div>
@@ -198,11 +198,37 @@
                 </button>
             </div>
             <div class="col-md-1">
-                {% if q or estado_activo %}
+                {% if q or estado_activo or desde or hasta or tag_activo %}
                 <a href="{% url 'encomienda_lista' %}" class="btn-clear w-100" title="Limpiar filtros">
                     <i class="fas fa-times"></i>
                 </a>
                 {% endif %}
+            </div>
+        </div>
+        <!-- Fila 2: filtros avanzados -->
+        <div class="row g-2 align-items-center mt-1">
+            <div class="col-md-3">
+                <label style="font-size:.7rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;display:block;">
+                    <i class="far fa-calendar-alt"></i> Desde
+                </label>
+                <input type="date" name="desde" value="{{ desde }}" class="form-control" onchange="this.form.submit()">
+            </div>
+            <div class="col-md-3">
+                <label style="font-size:.7rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;display:block;">
+                    <i class="far fa-calendar-check"></i> Hasta
+                </label>
+                <input type="date" name="hasta" value="{{ hasta }}" class="form-control" onchange="this.form.submit()">
+            </div>
+            <div class="col-md-3">
+                <label style="font-size:.7rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;display:block;">
+                    <i class="fas fa-tag"></i> Etiqueta
+                </label>
+                <select name="tag" class="form-select" onchange="this.form.submit()">
+                    <option value="">Todas las etiquetas</option>
+                    {% for codigo, info in tags_disponibles.items %}
+                    <option value="{{ codigo }}" {% if tag_activo == codigo %}selected{% endif %}>{{ info.label }}</option>
+                    {% endfor %}
+                </select>
             </div>
         </div>
         {% if q or estado_activo %}
@@ -214,6 +240,29 @@
         {% endif %}
     </form>
 </div>
+
+<!-- ⚡ BARRA DE ACCIONES MASIVAS (flotante cuando hay selección) -->
+<form method="post" id="bulkForm" action="{% url 'encomienda_bulk' %}">
+    {% csrf_token %}
+    <div id="bulkBar" style="display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:.75rem 1.25rem;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.3);z-index:1090;align-items:center;gap:.85rem;flex-wrap:wrap;">
+        <span style="font-size:.85rem;font-weight:600;">
+            <i class="fas fa-check-square" style="color:#10b981;"></i>
+            <span id="bulkCount">0</span> seleccionada<span id="bulkPlural">s</span>
+        </span>
+        <select name="accion" style="background:#1e293b;color:#fff;border:1.5px solid #475569;border-radius:8px;padding:.4rem .65rem;font-size:.8rem;outline:none;">
+            <option value="">Selecciona acción...</option>
+            <option value="estado:TR">→ Cambiar a "En tránsito"</option>
+            <option value="estado:DE">→ Cambiar a "En destino"</option>
+            <option value="estado:EN">→ Marcar como "Entregado"</option>
+            <option value="estado:DV">→ Marcar como "Devuelto"</option>
+        </select>
+        <button type="submit" style="background:linear-gradient(135deg,#4f46e5,#6366f1);color:#fff;border:none;border-radius:8px;padding:.5rem 1.1rem;font-size:.8rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;">
+            <i class="fas fa-bolt"></i> Aplicar
+        </button>
+        <button type="button" onclick="clearSelection()" style="background:transparent;color:#94a3b8;border:none;cursor:pointer;font-size:.85rem;padding:.4rem;">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
 
 <!-- TABLA -->
 <div class="tc">
@@ -229,7 +278,10 @@
         <table class="table mb-0">
             <thead>
                 <tr>
-                    <th class="ps-4">Código</th>
+                    <th style="width:40px;" class="ps-4">
+                        <input type="checkbox" id="checkAll" style="cursor:pointer;width:16px;height:16px;">
+                    </th>
+                    <th>Código</th>
                     <th>Remitente</th>
                     <th>Ruta</th>
                     <th>Estado</th>
@@ -241,7 +293,10 @@
             <tbody id="tablaBody">
                 {% for enc in encomiendas %}
                 <tr class="fila-link" data-href="{% url 'encomienda_detalle' enc.pk %}">
-                    <td class="ps-4">
+                    <td class="ps-4" onclick="event.stopPropagation()">
+                        <input type="checkbox" name="ids" form="bulkForm" value="{{ enc.pk }}" class="bulk-check" style="cursor:pointer;width:16px;height:16px;">
+                    </td>
+                    <td>
                         <span class="font-monospace fw-bold text-primary" style="font-size:.8rem;">{{ enc.codigo }}</span>
                         {% if enc.tiene_retraso %}
                         <span class="bs-retraso ms-1"><i class="fas fa-clock"></i> Retraso</span>
@@ -277,10 +332,14 @@
                     <td>
                         <strong style="color:#059669;font-size:.875rem;">S/ {{ enc.costo_envio }}</strong>
                     </td>
-                    <td class="text-end pe-4">
+                    <td class="text-end pe-4" style="white-space:nowrap;">
                         <a href="{% url 'encomienda_detalle' enc.pk %}"
                            class="btn-o" onclick="event.stopPropagation()">
                             <i class="fas fa-eye"></i> Ver
+                        </a>
+                        <a href="{% url 'encomienda_editar' enc.pk %}"
+                           class="btn-o" onclick="event.stopPropagation()" style="margin-left:.35rem;">
+                            <i class="fas fa-edit"></i> Editar
                         </a>
                     </td>
                 </tr>
@@ -331,18 +390,159 @@
     </div>
     {% endif %}
 </div>
+</form>
 
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Búsqueda en tiempo real (debounce 400ms)
-let timer;
-document.getElementById('searchInput')?.addEventListener('input', function () {
+// ════════════════════════════════════════════════════════════
+// 🔍 BÚSQUEDA AJAX — sin recargar la página
+// El cursor nunca se pierde, la URL se actualiza, instant feedback
+// ════════════════════════════════════════════════════════════
+const searchInput = document.getElementById('searchInput');
+const filterForm  = document.getElementById('filterForm');
+const tablaCard   = document.querySelector('.tc');
+const estadoSelect = filterForm.querySelector('select[name="estado"]');
+let timer = null;
+let abortController = null;
+
+async function ejecutarBusqueda(updateUrl = true) {
+    // Cancela petición anterior si está en curso
+    if (abortController) abortController.abort();
+    abortController = new AbortController();
+
+    const params = new URLSearchParams();
+    if (searchInput.value.trim()) params.set('q', searchInput.value.trim());
+    if (estadoSelect && estadoSelect.value) params.set('estado', estadoSelect.value);
+
+    const url = '{% url "encomienda_lista" %}' + (params.toString() ? '?' + params.toString() : '');
+
+    // Indicador visual de carga
+    tablaCard.style.opacity = '0.5';
+    tablaCard.style.transition = 'opacity .15s';
+
+    try {
+        const resp = await fetch(url, {
+            signal: abortController.signal,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        });
+        if (!resp.ok) throw new Error('Error de red');
+        const html = await resp.text();
+
+        // Parsea la respuesta y extrae solo el bloque de la tabla y filtros activos
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        // Reemplaza solo el card de la tabla (resultados)
+        const newTabla = doc.querySelector('.tc');
+        if (newTabla) tablaCard.innerHTML = newTabla.innerHTML;
+
+        // Actualiza el badge de filtros activos
+        const filtrosNuevos = doc.querySelector('.fc form');
+        const filtrosActuales = filterForm;
+        if (filtrosNuevos && filtrosActuales) {
+            const tagsNuevos = filtrosNuevos.querySelector('.mt-2');
+            const tagsViejos = filtrosActuales.querySelector('.mt-2');
+            if (tagsViejos) tagsViejos.remove();
+            if (tagsNuevos) filtrosActuales.appendChild(tagsNuevos.cloneNode(true));
+        }
+
+        // Actualiza la URL del navegador sin recargar
+        if (updateUrl) {
+            window.history.replaceState({}, '', url);
+        }
+    } catch (err) {
+        if (err.name !== 'AbortError') console.warn('Error en búsqueda:', err);
+    } finally {
+        tablaCard.style.opacity = '1';
+    }
+}
+
+// Buscar mientras escribes (debounce 350ms)
+searchInput?.addEventListener('input', () => {
     clearTimeout(timer);
-    timer = setTimeout(() => {
-        document.getElementById('filterForm').submit();
-    }, 400);
+    timer = setTimeout(() => ejecutarBusqueda(), 350);
+});
+
+// Enter ejecuta al instante
+searchInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        clearTimeout(timer);
+        ejecutarBusqueda();
+    }
+});
+
+// Cambio del estado dispara búsqueda
+estadoSelect?.addEventListener('change', () => ejecutarBusqueda());
+
+// Prevenir submit tradicional del form (que recargaría la página)
+filterForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    clearTimeout(timer);
+    ejecutarBusqueda();
+});
+
+// Mantener foco al cargar si ya había búsqueda
+window.addEventListener('DOMContentLoaded', () => {
+    if (searchInput?.value) {
+        searchInput.focus();
+        const len = searchInput.value.length;
+        searchInput.setSelectionRange(len, len);
+    }
+});
+
+// ════════════════════════════════════════════════════════════
+// ⚡ BULK SELECTION — Acciones masivas
+// ════════════════════════════════════════════════════════════
+const checkAll = document.getElementById('checkAll');
+const bulkBar = document.getElementById('bulkBar');
+const bulkCount = document.getElementById('bulkCount');
+const bulkPlural = document.getElementById('bulkPlural');
+
+function updateBulkBar() {
+    const checks = document.querySelectorAll('.bulk-check:checked');
+    const n = checks.length;
+    if (n > 0) {
+        bulkBar.style.display = 'flex';
+        bulkCount.textContent = n;
+        bulkPlural.textContent = n === 1 ? '' : 's';
+    } else {
+        bulkBar.style.display = 'none';
+    }
+}
+
+function clearSelection() {
+    document.querySelectorAll('.bulk-check').forEach(c => c.checked = false);
+    if (checkAll) checkAll.checked = false;
+    updateBulkBar();
+}
+
+checkAll?.addEventListener('change', () => {
+    document.querySelectorAll('.bulk-check').forEach(c => c.checked = checkAll.checked);
+    updateBulkBar();
+});
+
+document.addEventListener('change', (e) => {
+    if (e.target.classList.contains('bulk-check')) {
+        updateBulkBar();
+        // Si destildaste uno, destilda también el "todos"
+        if (!e.target.checked && checkAll) checkAll.checked = false;
+    }
+});
+
+document.getElementById('bulkForm')?.addEventListener('submit', (e) => {
+    const accion = e.target.querySelector('[name="accion"]').value;
+    const selected = document.querySelectorAll('.bulk-check:checked').length;
+    if (!accion) {
+        e.preventDefault();
+        alert('Selecciona una acción primero.');
+        return;
+    }
+    if (!confirm(`¿Aplicar la acción a ${selected} encomienda${selected !== 1 ? 's' : ''}?`)) {
+        e.preventDefault();
+    }
 });
 </script>
 {% endblock %}

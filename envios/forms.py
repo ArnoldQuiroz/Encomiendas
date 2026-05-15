@@ -4,9 +4,23 @@ from clientes.models import Cliente
 from rutas.models import Ruta
 
 class EncomiendaForm(forms.ModelForm):
+    # 🏷️ Tags como checkboxes múltiples
+    tags = forms.MultipleChoiceField(
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        choices=[
+            ('FRAGIL',       'Frágil'),
+            ('PRIORITARIO',  'Prioritario'),
+            ('REFRIGERADO',  'Refrigerado'),
+            ('PAGO_DESTINO', 'Pago en destino'),
+            ('DOCUMENTO',    'Documento'),
+        ],
+        label='Etiquetas',
+    )
+
     class Meta:
         model  = Encomienda
-        fields = ['codigo','descripcion','peso_kg','volumen_cm3','remitente','destinatario','ruta','costo_envio','fecha_entrega_est','observaciones']
+        fields = ['codigo','descripcion','peso_kg','volumen_cm3','remitente','destinatario','ruta','costo_envio','fecha_entrega_est','observaciones','tags']
         widgets = {
             'codigo':            forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'ENC-2026-001'}),
             'descripcion':       forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
@@ -32,6 +46,14 @@ class EncomiendaForm(forms.ModelForm):
         self.fields['remitente'].queryset    = Cliente.objects.activos()
         self.fields['destinatario'].queryset = Cliente.objects.activos()
         self.fields['ruta'].queryset         = Ruta.objects.activas()
+        # Pre-cargar tags si la instancia ya los tiene (edición)
+        if self.instance and self.instance.pk and self.instance.tags:
+            self.initial['tags'] = self.instance.tags_list
+
+    def clean_tags(self):
+        """Convierte la lista de checkboxes a string separado por coma."""
+        tags = self.cleaned_data.get('tags', [])
+        return ','.join(tags)
 
     def clean(self):
         cleaned      = super().clean()

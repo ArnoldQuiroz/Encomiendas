@@ -4,7 +4,86 @@
 {% block extra_css %}
 <style>
 /* ── Layout ── */
-.form-page { max-width: 860px; margin: 0 auto; }
+.form-page { max-width: 1280px; margin: 0 auto; }
+
+/* Grid principal con sidebar de resumen */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 1.25rem;
+    align-items: start;
+}
+.form-grid-main { min-width: 0; }
+.form-grid-side { position: sticky; top: 1rem; }
+
+@media (max-width: 992px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .form-grid-side { position: static; }
+}
+
+/* Resumen lateral */
+.summary {
+    background: linear-gradient(135deg, #4f46e5, #6366f1, #8b5cf6);
+    color: #fff; border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 28px rgba(79,70,229,.3);
+    position: relative; overflow: hidden;
+}
+.summary::before {
+    content:''; position:absolute; top:-50px; right:-30px;
+    width:140px; height:140px; border-radius:50%;
+    background:rgba(255,255,255,.08);
+}
+.summary h6 {
+    font-size: .7rem; font-weight: 700; opacity: .8;
+    text-transform: uppercase; letter-spacing: .07em;
+    margin: 0 0 .35rem; position: relative; z-index: 1;
+}
+.summary h3 {
+    font-size: 1.05rem; font-weight: 800;
+    margin: 0 0 1.25rem; position: relative; z-index: 1;
+}
+.sum-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: .65rem 0; border-bottom: 1px dashed rgba(255,255,255,.18);
+    font-size: .82rem; position: relative; z-index: 1;
+}
+.sum-row:last-of-type { border-bottom: none; }
+.sum-lbl { opacity: .85; display: flex; align-items: center; gap: .4rem; }
+.sum-lbl i { width: 14px; opacity: .75; }
+.sum-val { font-weight: 700; }
+.sum-val.empty { opacity: .4; font-style: italic; font-weight: 400; }
+
+.sum-total {
+    background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.25);
+    border-radius: 12px; padding: 1rem;
+    margin-top: 1rem; position: relative; z-index: 1;
+}
+.sum-total-lbl { font-size: .65rem; opacity: .8; text-transform: uppercase; letter-spacing: .07em; }
+.sum-total-val { font-size: 1.6rem; font-weight: 900; margin-top: .2rem; }
+
+.sum-tips {
+    background: #fff; color: #475569;
+    border-radius: 14px; padding: 1.1rem 1.25rem;
+    margin-top: 1rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    border: 1px solid #e2e8f0;
+}
+.sum-tips h6 {
+    font-size: .72rem; font-weight: 700; color: #0f172a;
+    margin: 0 0 .65rem; display: flex; align-items: center; gap: .4rem;
+    text-transform: uppercase; letter-spacing: .06em;
+}
+.sum-tips h6 i { color: #f59e0b; }
+.sum-tip {
+    display: flex; align-items: flex-start; gap: .55rem;
+    font-size: .76rem; line-height: 1.5;
+    padding: .35rem 0;
+}
+.sum-tip i {
+    width: 18px; color: #4f46e5; flex-shrink: 0;
+    margin-top: .15rem;
+}
 
 /* ── Page header ── */
 .fph {
@@ -151,6 +230,178 @@ textarea.form-control { resize: vertical; min-height: 90px; }
     display: flex; align-items: flex-start; gap: .65rem;
     font-size: .85rem; font-weight: 500; margin-bottom: 1.25rem;
 }
+
+/* ════════════════════════════════════════
+   CLIENT PICKER (buscador de clientes)
+═══════════════════════════════════════ */
+.cli-picker { position: relative; }
+.cli-picker-display {
+    border-radius: 10px; border: 1.5px solid #e2e8f0;
+    padding: .55rem .85rem; font-size: .875rem;
+    background: #fff; cursor: pointer;
+    min-height: 42px; display: flex; align-items: center;
+    transition: all .2s; outline: none;
+}
+.cli-picker-display:hover, .cli-picker-display:focus,
+.cli-picker.open .cli-picker-display {
+    border-color: var(--cli-color, #4f46e5);
+    box-shadow: 0 0 0 3px rgba(79,70,229,.1);
+}
+.cli-picker-placeholder { color: #94a3b8; display: flex; align-items: center; gap: .45rem; }
+
+.cli-picker-selected { display: flex; align-items: center; gap: .65rem; flex: 1; }
+.cli-picker-av {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--cli-color, #4f46e5), #6366f1);
+    color: #fff; font-size: .72rem; font-weight: 800;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.cli-picker-info { flex: 1; min-width: 0; line-height: 1.2; }
+.cli-picker-name {
+    font-weight: 700; color: #0f172a; font-size: .85rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cli-picker-doc {
+    font-family: 'JetBrains Mono', monospace; font-size: .7rem; color: #64748b;
+    margin-top: .1rem;
+}
+.cli-picker-clear {
+    background: #f1f5f9; color: #94a3b8; border: none;
+    width: 22px; height: 22px; border-radius: 50%;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: .65rem; transition: all .15s;
+}
+.cli-picker-clear:hover { background: #ef4444; color: #fff; }
+
+/* Dropdown */
+.cli-picker-dropdown {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+    box-shadow: 0 10px 32px rgba(0,0,0,.12);
+    z-index: 100; max-height: 380px;
+    display: none; flex-direction: column; overflow: hidden;
+}
+.cli-picker.open .cli-picker-dropdown { display: flex; }
+
+.cli-picker-search-wrap {
+    position: relative; padding: .65rem .85rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+.cli-picker-search-wrap i {
+    position: absolute; left: 1.55rem; top: 50%; transform: translateY(-50%);
+    color: #94a3b8; font-size: .8rem; pointer-events: none;
+}
+.cli-picker-search {
+    width: 100%; border: 1.5px solid #e2e8f0; border-radius: 8px;
+    padding: .5rem .8rem .5rem 2rem; font-size: .85rem;
+    outline: none; transition: all .15s;
+}
+.cli-picker-search:focus { border-color: var(--cli-color, #4f46e5); }
+
+.cli-picker-results {
+    overflow-y: auto; flex: 1; padding: .25rem 0;
+    max-height: 280px;
+}
+.cli-picker-result {
+    padding: .55rem .85rem; cursor: pointer;
+    display: flex; align-items: center; gap: .65rem;
+    transition: background .12s;
+}
+.cli-picker-result:hover, .cli-picker-result.highlighted {
+    background: #f8fafc;
+}
+.cli-picker-result-name { font-weight: 600; color: #0f172a; font-size: .82rem; line-height: 1.2; }
+.cli-picker-result-doc { font-family: monospace; font-size: .7rem; color: #94a3b8; margin-top: .15rem; }
+
+.cli-picker-empty, .cli-picker-loading {
+    padding: 1.5rem 1rem; text-align: center;
+    color: #94a3b8; font-size: .8rem;
+}
+.cli-picker-empty i, .cli-picker-loading i {
+    font-size: 1.2rem; display: block; margin-bottom: .35rem; color: #cbd5e1;
+}
+
+.cli-picker-new {
+    border-top: 1px solid #f1f5f9;
+    padding: .65rem .85rem;
+    text-align: center; font-size: .8rem;
+    color: #4f46e5; font-weight: 700;
+    text-decoration: none;
+    transition: all .15s;
+    display: flex; align-items: center; justify-content: center; gap: .4rem;
+}
+.cli-picker-new:hover { background: #e0e7ff; color: #3730a3; }
+
+mark.cli-hl {
+    background: #fef08a; color: #92400e;
+    padding: 0 2px; border-radius: 3px;
+}
+
+/* ── Ruta picker ── */
+.ruta-picker { position: relative; }
+.ruta-picker .cli-picker-display {
+    border-radius: 10px; border: 1.5px solid #e2e8f0;
+    padding: .55rem .85rem; font-size: .875rem;
+    background: #fff; cursor: pointer;
+    min-height: 42px; display: flex; align-items: center;
+    transition: all .2s; outline: none;
+}
+.ruta-picker .cli-picker-display:hover,
+.ruta-picker .cli-picker-display:focus,
+.ruta-picker.open .cli-picker-display {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16,185,129,.1);
+}
+.ruta-picker .cli-picker-dropdown {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+    box-shadow: 0 10px 32px rgba(0,0,0,.12);
+    z-index: 100; max-height: 380px;
+    display: none; flex-direction: column; overflow: hidden;
+}
+.ruta-picker.open .cli-picker-dropdown { display: flex; }
+.ruta-picker-search {
+    width: 100%; border: 1.5px solid #e2e8f0; border-radius: 8px;
+    padding: .5rem .8rem .5rem 2rem; font-size: .85rem;
+    outline: none; transition: all .15s;
+}
+.ruta-picker-search:focus { border-color: #10b981; }
+.ruta-picker-results {
+    overflow-y: auto; flex: 1; padding: .25rem 0;
+    max-height: 280px;
+}
+.ruta-picker-result {
+    padding: .6rem .85rem; cursor: pointer;
+    display: flex; align-items: center; gap: .65rem;
+    transition: background .12s;
+}
+.ruta-picker-result:hover, .ruta-picker-result.highlighted { background: #f0fdf4; }
+
+.ruta-pill {
+    background: #d1fae5; color: #047857;
+    font-family: 'JetBrains Mono', monospace; font-size: .68rem;
+    font-weight: 700; padding: .15rem .5rem; border-radius: 6px;
+    flex-shrink: 0;
+}
+.ruta-info { flex: 1; min-width: 0; line-height: 1.25; }
+.ruta-arrow {
+    color: #cbd5e1; font-size: .65rem; margin: 0 .35rem;
+}
+.ruta-cities {
+    font-weight: 700; color: #0f172a; font-size: .85rem;
+}
+.ruta-meta {
+    font-size: .7rem; color: #64748b; margin-top: .15rem;
+    display: flex; align-items: center; gap: .55rem;
+}
+.ruta-meta span { display: flex; align-items: center; gap: .25rem; }
+
+/* Display cuando hay ruta seleccionada */
+.ruta-selected {
+    display: flex; align-items: center; gap: .65rem; flex: 1; min-width: 0;
+}
+.ruta-selected .ruta-info { flex: 1; }
 </style>
 {% endblock %}
 
@@ -185,6 +436,10 @@ textarea.form-control { resize: vertical; min-height: 90px; }
             <span class="step-label">Confirmación</span>
         </div>
     </div>
+
+    <!-- 📐 GRID DE 2 COLUMNAS: formulario + resumen lateral -->
+    <div class="form-grid">
+        <div class="form-grid-main">
 
     <form method="post" id="encForm">
         {% csrf_token %}
@@ -239,16 +494,47 @@ textarea.form-control { resize: vertical; min-height: 90px; }
             </div>
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label">{{ form.remitente.label }}<span class="req">*</span></label>
-                    {{ form.remitente }}
+                    <label class="form-label">Remitente<span class="req">*</span></label>
+                    <div class="cli-picker" data-field="remitente" data-color="#4f46e5">
+                        <input type="hidden" name="remitente" id="remitente-input" value="{{ form.remitente.value|default:'' }}">
+                        <div class="cli-picker-display" tabindex="0">
+                            <span class="cli-picker-placeholder"><i class="fas fa-search"></i> Buscar por DNI o nombre...</span>
+                        </div>
+                        <div class="cli-picker-dropdown">
+                            <div class="cli-picker-search-wrap">
+                                <i class="fas fa-search"></i>
+                                <input type="text" class="cli-picker-search" placeholder="Escribe DNI o nombre...">
+                            </div>
+                            <div class="cli-picker-results"></div>
+                            <a href="{% url 'cliente_crear' %}" target="_blank" class="cli-picker-new">
+                                <i class="fas fa-plus-circle"></i> Crear nuevo cliente
+                            </a>
+                        </div>
+                    </div>
                     {% if form.remitente.errors %}<div class="field-error">{{ form.remitente.errors }}</div>{% endif %}
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">{{ form.destinatario.label }}<span class="req">*</span></label>
-                    {{ form.destinatario }}
+                    <label class="form-label">Destinatario<span class="req">*</span></label>
+                    <div class="cli-picker" data-field="destinatario" data-color="#10b981">
+                        <input type="hidden" name="destinatario" id="destinatario-input" value="{{ form.destinatario.value|default:'' }}">
+                        <div class="cli-picker-display" tabindex="0">
+                            <span class="cli-picker-placeholder"><i class="fas fa-search"></i> Buscar por DNI o nombre...</span>
+                        </div>
+                        <div class="cli-picker-dropdown">
+                            <div class="cli-picker-search-wrap">
+                                <i class="fas fa-search"></i>
+                                <input type="text" class="cli-picker-search" placeholder="Escribe DNI o nombre...">
+                            </div>
+                            <div class="cli-picker-results"></div>
+                            <a href="{% url 'cliente_crear' %}" target="_blank" class="cli-picker-new">
+                                <i class="fas fa-plus-circle"></i> Crear nuevo cliente
+                            </a>
+                        </div>
+                    </div>
                     {% if form.destinatario.errors %}<div class="field-error">{{ form.destinatario.errors }}</div>{% endif %}
                 </div>
             </div>
+
         </div>
 
         <!-- SECCIÓN 3: LOGÍSTICA -->
@@ -264,8 +550,20 @@ textarea.form-control { resize: vertical; min-height: 90px; }
             </div>
             <div class="row g-3 mb-3">
                 <div class="col-md-5">
-                    <label class="form-label">{{ form.ruta.label }}<span class="req">*</span></label>
-                    {{ form.ruta }}
+                    <label class="form-label">Ruta<span class="req">*</span></label>
+                    <div class="ruta-picker" data-color="#10b981">
+                        <input type="hidden" name="ruta" id="ruta-input" value="{{ form.ruta.value|default:'' }}">
+                        <div class="cli-picker-display" tabindex="0">
+                            <span class="cli-picker-placeholder"><i class="fas fa-search"></i> Buscar ruta...</span>
+                        </div>
+                        <div class="cli-picker-dropdown">
+                            <div class="cli-picker-search-wrap">
+                                <i class="fas fa-search"></i>
+                                <input type="text" class="ruta-picker-search" placeholder="Lima, Arequipa, LIM-AQP...">
+                            </div>
+                            <div class="ruta-picker-results"></div>
+                        </div>
+                    </div>
                     {% if form.ruta.errors %}<div class="field-error">{{ form.ruta.errors }}</div>{% endif %}
                 </div>
                 <div class="col-md-3">
@@ -305,6 +603,27 @@ textarea.form-control { resize: vertical; min-height: 90px; }
             </div>
         </div>
 
+        <!-- SECCIÓN: ETIQUETAS -->
+        <div class="fs">
+            <div class="fs-head">
+                <div class="fs-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+                    <i class="fas fa-tags"></i>
+                </div>
+                <div>
+                    <h6>Etiquetas</h6>
+                    <small>Marca características especiales del paquete (opcional)</small>
+                </div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:.55rem;">
+                {% for chk in form.tags %}
+                <label style="display:inline-flex;align-items:center;gap:.45rem;background:#f8fafc;border:1.5px solid #e2e8f0;padding:.55rem .9rem;border-radius:10px;cursor:pointer;transition:all .15s;font-size:.82rem;font-weight:600;color:#475569;user-select:none;" onclick="setTimeout(()=>this.style.borderColor=this.querySelector('input').checked?'#4f46e5':'#e2e8f0',0)">
+                    {{ chk.tag }}
+                    <span>{{ chk.choice_label }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
         <!-- FOOTER CON BOTONES -->
         <div class="form-footer">
             <button type="button" class="btn-cancel" onclick="history.back()">
@@ -315,11 +634,166 @@ textarea.form-control { resize: vertical; min-height: 90px; }
             </button>
         </div>
     </form>
+
+        </div><!-- /form-grid-main -->
+
+        <!-- 📊 SIDEBAR DE RESUMEN -->
+        <aside class="form-grid-side">
+            <div class="summary">
+                <h6><i class="fas fa-eye"></i> Vista previa</h6>
+                <h3>Resumen del envío</h3>
+
+                <div class="sum-row">
+                    <span class="sum-lbl"><i class="fas fa-barcode"></i> Código</span>
+                    <span class="sum-val" id="sum-codigo">AUTO</span>
+                </div>
+                <div class="sum-row">
+                    <span class="sum-lbl"><i class="fas fa-paper-plane"></i> Remitente</span>
+                    <span class="sum-val empty" id="sum-remitente">Sin seleccionar</span>
+                </div>
+                <div class="sum-row">
+                    <span class="sum-lbl"><i class="fas fa-inbox"></i> Destinatario</span>
+                    <span class="sum-val empty" id="sum-destinatario">Sin seleccionar</span>
+                </div>
+                <div class="sum-row">
+                    <span class="sum-lbl"><i class="fas fa-route"></i> Ruta</span>
+                    <span class="sum-val empty" id="sum-ruta">Sin seleccionar</span>
+                </div>
+                <div class="sum-row">
+                    <span class="sum-lbl"><i class="fas fa-weight-hanging"></i> Peso</span>
+                    <span class="sum-val empty" id="sum-peso">— kg</span>
+                </div>
+                <div class="sum-row">
+                    <span class="sum-lbl"><i class="far fa-calendar-alt"></i> Entrega est.</span>
+                    <span class="sum-val empty" id="sum-fecha">—</span>
+                </div>
+
+                <div class="sum-total">
+                    <div class="sum-total-lbl"><i class="fas fa-tag"></i> Costo total</div>
+                    <div class="sum-total-val" id="sum-total">S/ 0.00</div>
+                </div>
+            </div>
+
+            <div class="sum-tips">
+                <h6><i class="fas fa-lightbulb"></i> Tips</h6>
+                <div class="sum-tip">
+                    <i class="fas fa-bolt"></i>
+                    <span>El <strong>código se genera automáticamente</strong>, puedes modificarlo si quieres.</span>
+                </div>
+                <div class="sum-tip">
+                    <i class="fas fa-calculator"></i>
+                    <span>El <strong>costo se calcula</strong> según la ruta + peso extra sobre 5kg.</span>
+                </div>
+                <div class="sum-tip">
+                    <i class="fas fa-tags"></i>
+                    <span>Marca etiquetas como <strong>Frágil o Prioritario</strong> si corresponde.</span>
+                </div>
+                <div class="sum-tip">
+                    <i class="fas fa-paper-plane"></i>
+                    <span>Al guardar, el cliente recibirá un <strong>email automático</strong>.</span>
+                </div>
+            </div>
+        </aside>
+
+    </div><!-- /form-grid -->
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+// ════════════════════════════════════════════════════════════
+// 📊 SUMMARY SIDEBAR — Actualiza el resumen en vivo
+// ════════════════════════════════════════════════════════════
+function actualizarResumen() {
+    const codigoIn = document.querySelector('[name="codigo"]');
+    const pesoIn = document.querySelector('[name="peso_kg"]');
+    const costoIn = document.querySelector('[name="costo_envio"]');
+    const fechaIn = document.querySelector('[name="fecha_entrega_est"]');
+
+    // Código
+    const sumCodigo = document.getElementById('sum-codigo');
+    if (sumCodigo && codigoIn) sumCodigo.textContent = codigoIn.value || 'AUTO';
+
+    // Peso
+    const sumPeso = document.getElementById('sum-peso');
+    if (sumPeso && pesoIn) {
+        const v = parseFloat(pesoIn.value);
+        if (v > 0) { sumPeso.textContent = v + ' kg'; sumPeso.classList.remove('empty'); }
+        else { sumPeso.textContent = '— kg'; sumPeso.classList.add('empty'); }
+    }
+
+    // Fecha
+    const sumFecha = document.getElementById('sum-fecha');
+    if (sumFecha && fechaIn) {
+        if (fechaIn.value) {
+            const d = new Date(fechaIn.value + 'T00:00');
+            sumFecha.textContent = d.toLocaleDateString('es-PE', { day:'2-digit', month:'short', year:'numeric' });
+            sumFecha.classList.remove('empty');
+        } else {
+            sumFecha.textContent = '—'; sumFecha.classList.add('empty');
+        }
+    }
+
+    // Costo total
+    const sumTotal = document.getElementById('sum-total');
+    if (sumTotal && costoIn) {
+        const v = parseFloat(costoIn.value) || 0;
+        sumTotal.textContent = 'S/ ' + v.toFixed(2);
+    }
+}
+
+// Actualiza el resumen al cambiar cualquier input
+['codigo', 'peso_kg', 'costo_envio', 'fecha_entrega_est'].forEach(name => {
+    const el = document.querySelector(`[name="${name}"]`);
+    if (el) el.addEventListener('input', actualizarResumen);
+});
+
+// Actualizar cuando se selecciona remitente, destinatario o ruta
+const sumRemiObs = new MutationObserver(() => {
+    const display = document.querySelector('.cli-picker[data-field="remitente"] .cli-picker-display .cli-selected');
+    const el = document.getElementById('sum-remitente');
+    if (el) {
+        if (display) {
+            el.textContent = display.querySelector('.cli-name')?.textContent || 'Seleccionado';
+            el.classList.remove('empty');
+        } else {
+            el.textContent = 'Sin seleccionar'; el.classList.add('empty');
+        }
+    }
+});
+const sumDestObs = new MutationObserver(() => {
+    const display = document.querySelector('.cli-picker[data-field="destinatario"] .cli-picker-display .cli-selected');
+    const el = document.getElementById('sum-destinatario');
+    if (el) {
+        if (display) {
+            el.textContent = display.querySelector('.cli-name')?.textContent || 'Seleccionado';
+            el.classList.remove('empty');
+        } else {
+            el.textContent = 'Sin seleccionar'; el.classList.add('empty');
+        }
+    }
+});
+const sumRutaObs = new MutationObserver(() => {
+    const display = document.querySelector('.ruta-picker .cli-picker-display .ruta-selected');
+    const el = document.getElementById('sum-ruta');
+    if (el) {
+        if (display) {
+            el.textContent = display.querySelector('.ruta-cities')?.textContent.trim() || 'Seleccionada';
+            el.classList.remove('empty');
+        } else {
+            el.textContent = 'Sin seleccionar'; el.classList.add('empty');
+        }
+    }
+});
+window.addEventListener('load', () => {
+    const rem = document.querySelector('.cli-picker[data-field="remitente"] .cli-picker-display');
+    const dest = document.querySelector('.cli-picker[data-field="destinatario"] .cli-picker-display');
+    const ruta = document.querySelector('.ruta-picker .cli-picker-display');
+    if (rem) sumRemiObs.observe(rem, {childList: true, subtree: true});
+    if (dest) sumDestObs.observe(dest, {childList: true, subtree: true});
+    if (ruta) sumRutaObs.observe(ruta, {childList: true, subtree: true});
+});
+
 // Preview costo en tiempo real
 const costoInput = document.querySelector('[name="costo_envio"]');
 const costoPreview = document.getElementById('costoPreview');
@@ -343,5 +817,393 @@ document.getElementById('encForm')?.addEventListener('submit', function () {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
     btn.disabled = true;
 });
+
+// ════════════════════════════════════════════════════════════
+// 🔍 CLIENT PICKER — Buscador inteligente de clientes
+// ════════════════════════════════════════════════════════════
+class ClientePicker {
+    constructor(root) {
+        this.root = root;
+        this.field = root.dataset.field;
+        this.color = root.dataset.color || '#4f46e5';
+        this.input = root.querySelector('input[type="hidden"]');
+        this.display = root.querySelector('.cli-picker-display');
+        this.dropdown = root.querySelector('.cli-picker-dropdown');
+        this.search = root.querySelector('.cli-picker-search');
+        this.results = root.querySelector('.cli-picker-results');
+        this.cache = new Map();
+        this.debounceTimer = null;
+        this.highlightIdx = -1;
+        this.currentResults = [];
+
+        // CSS variable para color
+        root.style.setProperty('--cli-color', this.color);
+
+        this.init();
+    }
+
+    init() {
+        // Click en display para abrir
+        this.display.addEventListener('click', () => this.open());
+        this.display.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.open(); }
+        });
+
+        // Búsqueda con debounce
+        this.search.addEventListener('input', () => {
+            clearTimeout(this.debounceTimer);
+            this.debounceTimer = setTimeout(() => this.fetchResults(this.search.value), 250);
+        });
+
+        // Navegación con teclado
+        this.search.addEventListener('keydown', (e) => this.handleKey(e));
+
+        // Cerrar al click afuera
+        document.addEventListener('click', (e) => {
+            if (!this.root.contains(e.target)) this.close();
+        });
+
+        // Si ya hay un valor cargado (form con error), mostrar selección
+        if (this.input.value) {
+            this.loadSelectedById(this.input.value);
+        }
+    }
+
+    open() {
+        this.root.classList.add('open');
+        setTimeout(() => this.search.focus(), 50);
+        if (this.currentResults.length === 0) this.fetchResults('');
+    }
+
+    close() {
+        this.root.classList.remove('open');
+        this.highlightIdx = -1;
+    }
+
+    async fetchResults(query) {
+        const key = query.trim().toLowerCase();
+        if (this.cache.has(key)) {
+            this.renderResults(this.cache.get(key), query);
+            return;
+        }
+
+        this.results.innerHTML = '<div class="cli-picker-loading"><i class="fas fa-spinner fa-spin"></i>Buscando...</div>';
+
+        try {
+            const url = `/api/v1/clientes/?q=${encodeURIComponent(query)}&page_size=20`;
+            const r = await fetch(url, { credentials: 'same-origin' });
+            const data = await r.json();
+            const items = data.results || [];
+            this.cache.set(key, items);
+            this.renderResults(items, query);
+        } catch (err) {
+            this.results.innerHTML = '<div class="cli-picker-empty">Error al buscar</div>';
+        }
+    }
+
+    renderResults(items, query) {
+        this.currentResults = items;
+        if (items.length === 0) {
+            this.results.innerHTML = `<div class="cli-picker-empty"><i class="fas fa-user-slash"></i>Sin resultados para "<strong>${this.escape(query)}</strong>"</div>`;
+            return;
+        }
+        const hl = (text, q) => {
+            if (!q) return this.escape(text);
+            const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return this.escape(text).replace(re, '<mark class="cli-hl">$1</mark>');
+        };
+
+        this.results.innerHTML = items.map((c, i) => `
+            <div class="cli-picker-result" data-idx="${i}" data-id="${c.id}">
+                <div class="cli-picker-av" style="background:linear-gradient(135deg,${this.color},#6366f1);">
+                    ${(c.nombres[0] || '?').toUpperCase()}
+                </div>
+                <div class="cli-picker-info">
+                    <div class="cli-picker-result-name">${hl(c.nombre_completo, query)}</div>
+                    <div class="cli-picker-result-doc">${c.tipo_doc} ${hl(c.nro_doc, query)}</div>
+                </div>
+            </div>
+        `).join('');
+
+        // Click en resultado
+        this.results.querySelectorAll('.cli-picker-result').forEach(el => {
+            el.addEventListener('click', () => this.select(items[parseInt(el.dataset.idx)]));
+            el.addEventListener('mouseenter', () => {
+                this.highlightIdx = parseInt(el.dataset.idx);
+                this.updateHighlight();
+            });
+        });
+    }
+
+    handleKey(e) {
+        const items = this.results.querySelectorAll('.cli-picker-result');
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            this.highlightIdx = Math.min(this.highlightIdx + 1, items.length - 1);
+            this.updateHighlight();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            this.highlightIdx = Math.max(this.highlightIdx - 1, 0);
+            this.updateHighlight();
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (this.highlightIdx >= 0 && this.currentResults[this.highlightIdx]) {
+                this.select(this.currentResults[this.highlightIdx]);
+            }
+        } else if (e.key === 'Escape') {
+            this.close();
+        }
+    }
+
+    updateHighlight() {
+        this.results.querySelectorAll('.cli-picker-result').forEach((el, i) => {
+            el.classList.toggle('highlighted', i === this.highlightIdx);
+            if (i === this.highlightIdx) el.scrollIntoView({ block: 'nearest' });
+        });
+    }
+
+    select(cliente) {
+        this.input.value = cliente.id;
+        this.display.innerHTML = `
+            <div class="cli-picker-selected">
+                <div class="cli-picker-av" style="background:linear-gradient(135deg,${this.color},#6366f1);">
+                    ${(cliente.nombres[0] || '?').toUpperCase()}
+                </div>
+                <div class="cli-picker-info">
+                    <div class="cli-picker-name">${this.escape(cliente.nombre_completo)}</div>
+                    <div class="cli-picker-doc">${cliente.tipo_doc} ${cliente.nro_doc}${cliente.telefono ? ' · ' + cliente.telefono : ''}</div>
+                </div>
+                <button type="button" class="cli-picker-clear" title="Cambiar"><i class="fas fa-times"></i></button>
+            </div>
+        `;
+        this.display.querySelector('.cli-picker-clear').addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.clear();
+        });
+        this.search.value = '';
+        this.close();
+    }
+
+    async loadSelectedById(id) {
+        try {
+            const r = await fetch(`/api/v1/clientes/?q=${id}`, { credentials: 'same-origin' });
+            const data = await r.json();
+            const found = (data.results || []).find(c => c.id == id);
+            if (found) this.select(found);
+        } catch (e) { /* ignore */ }
+    }
+
+    clear() {
+        this.input.value = '';
+        this.display.innerHTML = '<span class="cli-picker-placeholder"><i class="fas fa-search"></i> Buscar por DNI o nombre...</span>';
+    }
+
+    escape(s) {
+        const div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+    }
+}
+
+document.querySelectorAll('.cli-picker').forEach(el => new ClientePicker(el));
+
+// ════════════════════════════════════════════════════════════
+// 🛣️ RUTA PICKER — Buscador inteligente de rutas
+// ════════════════════════════════════════════════════════════
+class RutaPicker {
+    constructor(root) {
+        this.root = root;
+        this.input = root.querySelector('input[type="hidden"]');
+        this.display = root.querySelector('.cli-picker-display');
+        this.dropdown = root.querySelector('.cli-picker-dropdown');
+        this.search = root.querySelector('.ruta-picker-search');
+        this.results = root.querySelector('.ruta-picker-results');
+        this.allRutas = [];
+        this.filteredRutas = [];
+        this.highlightIdx = -1;
+        this.loaded = false;
+
+        this.init();
+    }
+
+    init() {
+        this.display.addEventListener('click', () => this.open());
+        this.display.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.open(); }
+        });
+
+        this.search.addEventListener('input', () => this.filter(this.search.value));
+        this.search.addEventListener('keydown', (e) => this.handleKey(e));
+
+        document.addEventListener('click', (e) => {
+            if (!this.root.contains(e.target)) this.close();
+        });
+
+        if (this.input.value) {
+            this.loadAndSelect(this.input.value);
+        }
+    }
+
+    async loadRutas() {
+        if (this.loaded) return;
+        try {
+            const r = await fetch('/api/v1/rutas/', { credentials: 'same-origin' });
+            const data = await r.json();
+            this.allRutas = Array.isArray(data) ? data : (data.results || []);
+            this.loaded = true;
+        } catch (err) {
+            this.allRutas = [];
+        }
+    }
+
+    async open() {
+        this.root.classList.add('open');
+        await this.loadRutas();
+        this.filter(this.search.value);
+        setTimeout(() => this.search.focus(), 50);
+    }
+
+    close() {
+        this.root.classList.remove('open');
+        this.highlightIdx = -1;
+    }
+
+    filter(query) {
+        const q = (query || '').trim().toLowerCase();
+        if (!q) {
+            this.filteredRutas = this.allRutas;
+        } else {
+            this.filteredRutas = this.allRutas.filter(r =>
+                r.codigo.toLowerCase().includes(q) ||
+                r.origen.toLowerCase().includes(q) ||
+                r.destino.toLowerCase().includes(q)
+            );
+        }
+        this.render(q);
+    }
+
+    render(query) {
+        if (this.filteredRutas.length === 0) {
+            this.results.innerHTML = `<div class="cli-picker-empty"><i class="fas fa-route"></i>Sin rutas para "<strong>${this.escape(query)}</strong>"</div>`;
+            return;
+        }
+        const hl = (text, q) => {
+            if (!q) return this.escape(text);
+            const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return this.escape(text).replace(re, '<mark class="cli-hl">$1</mark>');
+        };
+
+        this.results.innerHTML = this.filteredRutas.map((r, i) => `
+            <div class="ruta-picker-result" data-idx="${i}" data-id="${r.id}">
+                <span class="ruta-pill">${hl(r.codigo, query)}</span>
+                <div class="ruta-info">
+                    <div class="ruta-cities">
+                        ${hl(r.origen, query)}
+                        <span class="ruta-arrow"><i class="fas fa-arrow-right"></i></span>
+                        ${hl(r.destino, query)}
+                    </div>
+                    <div class="ruta-meta">
+                        <span><i class="far fa-clock"></i> ${r.dias_entrega} día${r.dias_entrega !== 1 ? 's' : ''}</span>
+                        <span style="color:#cbd5e1;">·</span>
+                        <span style="color:#059669;font-weight:700;"><i class="fas fa-tag"></i> S/ ${r.precio_base}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        this.results.querySelectorAll('.ruta-picker-result').forEach(el => {
+            el.addEventListener('click', () => this.select(this.filteredRutas[parseInt(el.dataset.idx)]));
+            el.addEventListener('mouseenter', () => {
+                this.highlightIdx = parseInt(el.dataset.idx);
+                this.updateHighlight();
+            });
+        });
+    }
+
+    handleKey(e) {
+        const items = this.results.querySelectorAll('.ruta-picker-result');
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            this.highlightIdx = Math.min(this.highlightIdx + 1, items.length - 1);
+            this.updateHighlight();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            this.highlightIdx = Math.max(this.highlightIdx - 1, 0);
+            this.updateHighlight();
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (this.highlightIdx >= 0 && this.filteredRutas[this.highlightIdx]) {
+                this.select(this.filteredRutas[this.highlightIdx]);
+            }
+        } else if (e.key === 'Escape') {
+            this.close();
+        }
+    }
+
+    updateHighlight() {
+        this.results.querySelectorAll('.ruta-picker-result').forEach((el, i) => {
+            el.classList.toggle('highlighted', i === this.highlightIdx);
+            if (i === this.highlightIdx) el.scrollIntoView({ block: 'nearest' });
+        });
+    }
+
+    select(ruta) {
+        this.input.value = ruta.id;
+        this.display.innerHTML = `
+            <div class="ruta-selected">
+                <span class="ruta-pill">${this.escape(ruta.codigo)}</span>
+                <div class="ruta-info">
+                    <div class="ruta-cities">
+                        ${this.escape(ruta.origen)}
+                        <span class="ruta-arrow"><i class="fas fa-arrow-right"></i></span>
+                        ${this.escape(ruta.destino)}
+                    </div>
+                    <div class="ruta-meta">
+                        <span><i class="far fa-clock"></i> ${ruta.dias_entrega} día${ruta.dias_entrega !== 1 ? 's' : ''}</span>
+                        <span style="color:#cbd5e1;">·</span>
+                        <span style="color:#059669;font-weight:700;">S/ ${ruta.precio_base}</span>
+                    </div>
+                </div>
+                <button type="button" class="cli-picker-clear" title="Cambiar"><i class="fas fa-times"></i></button>
+            </div>
+        `;
+        this.display.querySelector('.cli-picker-clear').addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.clear();
+        });
+        this.search.value = '';
+        this.close();
+
+        // Auto-llenar costo si está vacío
+        const pesoInput = document.querySelector('[name="peso_kg"]');
+        const costoInput = document.querySelector('[name="costo_envio"]');
+        if (costoInput && (!costoInput.value || costoInput.value === '0')) {
+            const peso = parseFloat(pesoInput?.value) || 0;
+            let costo = parseFloat(ruta.precio_base);
+            if (peso > 5) costo += (peso - 5) * 2.50;
+            costoInput.value = costo.toFixed(2);
+            costoInput.dispatchEvent(new Event('input'));
+        }
+    }
+
+    async loadAndSelect(id) {
+        await this.loadRutas();
+        const found = this.allRutas.find(r => r.id == id);
+        if (found) this.select(found);
+    }
+
+    clear() {
+        this.input.value = '';
+        this.display.innerHTML = '<span class="cli-picker-placeholder"><i class="fas fa-search"></i> Buscar ruta...</span>';
+    }
+
+    escape(s) {
+        const div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+    }
+}
+
+document.querySelectorAll('.ruta-picker').forEach(el => new RutaPicker(el));
 </script>
 {% endblock %}

@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}Cobros pendientes{% endblock %}
+
+{% block extra_css %}
+<style>
+.cb-page { max-width: 1100px; margin: 0 auto; }
+.cb-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; }
+.cb-title { display:flex; align-items:center; gap:.85rem; }
+.cb-icon { width:48px; height:48px; border-radius:13px; background: linear-gradient(135deg, #f59e0b, #d97706); display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:#fff; box-shadow:0 5px 16px rgba(245,158,11,.35); }
+.cb-title h2 { font-size: 1.25rem; font-weight: 800; margin: 0; }
+.cb-title p { font-size: .8rem; color: #94a3b8; margin: .15rem 0 0; }
+
+.cb-total {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border: 1.5px solid #f59e0b; border-radius: 14px;
+    padding: 1.5rem 2rem; margin-bottom: 1.25rem;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+}
+.cb-total-lbl { font-size: .78rem; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: .06em; }
+.cb-total-num { font-size: 2.4rem; font-weight: 900; color: #92400e; line-height: 1; margin-top: .35rem; }
+.cb-total-count { font-size: .82rem; color: #b45309; margin-top: .35rem; }
+
+.cb-list {
+    background: #fff; border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.05); border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+.cb-row {
+    display: flex; align-items: center; gap: 1rem;
+    padding: .85rem 1.25rem; border-bottom: 1px solid #f1f5f9;
+    transition: background .12s;
+}
+.cb-row:last-child { border-bottom: none; }
+.cb-row:hover { background: #fafbff; }
+.cb-codigo { font-family: monospace; font-weight: 800; color: #4f46e5; min-width: 130px; }
+.cb-cliente { flex: 1; min-width: 0; }
+.cb-cliente strong { color: #0f172a; font-size: .88rem; }
+.cb-cliente small { color: #94a3b8; font-size: .72rem; display: block; }
+.cb-ruta { font-size: .78rem; color: #64748b; min-width: 160px; }
+.cb-monto { font-weight: 800; color: #059669; font-size: 1.05rem; min-width: 90px; text-align: right; }
+.cb-action {
+    background: linear-gradient(135deg,#10b981,#059669); color:#fff;
+    border:none; border-radius:8px; padding:.45rem .85rem;
+    font-size:.75rem; font-weight:700; cursor:pointer; text-decoration:none;
+    display:inline-flex; align-items:center; gap:.35rem;
+}
+.cb-action:hover { transform:translateY(-1px); color:#fff; }
+
+.empty { text-align: center; padding: 3rem; color: #94a3b8; }
+.empty i { font-size: 2.5rem; color: #cbd5e1; margin-bottom: .5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cb-page">
+    <div class="cb-head">
+        <div class="cb-title">
+            <div class="cb-icon"><i class="fas fa-coins"></i></div>
+            <div>
+                <h2>Cobros pendientes</h2>
+                <p>Encomiendas que aún no han sido pagadas</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="cb-total">
+        <div>
+            <div class="cb-total-lbl">💰 Total por cobrar</div>
+            <div class="cb-total-num">S/ {{ total|floatformat:2 }}</div>
+            <div class="cb-total-count">{{ count }} encomienda{{ count|pluralize:"s" }} pendiente{{ count|pluralize:"s" }} de pago</div>
+        </div>
+        <div style="text-align:center;">
+            <i class="fas fa-hand-holding-usd" style="font-size:4rem;color:#d97706;opacity:.4;"></i>
+        </div>
+    </div>
+
+    <div class="cb-list">
+        {% for e in encomiendas %}
+        <div class="cb-row">
+            <div class="cb-codigo">{{ e.codigo }}</div>
+            <div class="cb-cliente">
+                <strong>{{ e.remitente.nombre_completo|truncatechars:32 }}</strong>
+                <small>{{ e.remitente.tipo_doc }} {{ e.remitente.nro_doc }}{% if e.remitente.telefono %} · 📞 {{ e.remitente.telefono }}{% endif %}</small>
+            </div>
+            <div class="cb-ruta">
+                {{ e.ruta.origen }} → {{ e.ruta.destino }}<br>
+                <small style="font-size:.7rem;color:#94a3b8;">{{ e.fecha_registro|date:'d M Y' }}</small>
+            </div>
+            <div class="cb-monto">S/ {{ e.costo_envio }}</div>
+            <a href="{% url 'encomienda_detalle' e.pk %}" class="cb-action">
+                <i class="fas fa-eye"></i> Ver
+            </a>
+        </div>
+        {% empty %}
+        <div class="empty">
+            <i class="fas fa-check-circle" style="color:#10b981;"></i><br>
+            <h6 style="color:#0f172a;font-weight:800;">¡No hay cobros pendientes!</h6>
+            <p style="font-size:.85rem;margin-top:.35rem;">Todas las encomiendas están pagadas.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

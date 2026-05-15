@@ -1,0 +1,640 @@
+{% extends 'base.html' %}
+{% block title %}{{ cliente.nombre_completo }} | Cliente{% endblock %}
+
+{% block extra_css %}
+<style>
+.det-page { max-width: 1280px; margin: 0 auto; }
+
+/* ── Header breadcrumb ── */
+.det-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;
+}
+.det-breadcrumb {
+    display: flex; align-items: center; gap: .5rem;
+    font-size: .8rem; color: #94a3b8;
+}
+.det-breadcrumb a { color: #64748b; text-decoration: none; font-weight: 600; }
+.det-breadcrumb a:hover { color: #4f46e5; }
+.det-breadcrumb .sep { color: #cbd5e1; }
+.det-breadcrumb strong { color: #0f172a; }
+.btn-back {
+    display: inline-flex; align-items: center; gap: .45rem;
+    padding: .5rem 1rem; border-radius: 10px;
+    border: 1.5px solid #e2e8f0; background: #fff;
+    color: #475569; font-weight: 600; font-size: .82rem;
+    text-decoration: none; transition: all .2s;
+}
+.btn-back:hover { border-color: #4f46e5; color: #4f46e5; background: #e0e7ff; }
+
+/* ════════════════════════════════════════
+   HERO PROFILE
+═══════════════════════════════════════ */
+.profile-hero {
+    background: linear-gradient(135deg, #1e1b4b 0%, #4f46e5 50%, #8b5cf6 100%);
+    border-radius: 18px;
+    padding: 2rem;
+    color: #fff;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+.profile-hero::before {
+    content: ''; position: absolute; top: -100px; right: -50px;
+    width: 320px; height: 320px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,.12), transparent 70%);
+}
+.profile-hero::after {
+    content: ''; position: absolute; bottom: -80px; left: 30%;
+    width: 240px; height: 240px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(168,85,247,.2), transparent 70%);
+}
+
+.profile-row {
+    display: flex; align-items: center; gap: 1.75rem;
+    position: relative; z-index: 1;
+    flex-wrap: wrap;
+}
+.profile-av {
+    width: 110px; height: 110px; border-radius: 28px;
+    background: rgba(255,255,255,.18);
+    border: 4px solid rgba(255,255,255,.35);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.25rem; font-weight: 800;
+    flex-shrink: 0;
+    box-shadow: 0 12px 32px rgba(0,0,0,.25);
+    backdrop-filter: blur(10px);
+}
+.profile-info { flex: 1; min-width: 240px; }
+.profile-status {
+    display: inline-flex; align-items: center; gap: .35rem;
+    background: rgba(16,185,129,.25); border: 1px solid rgba(110,231,183,.4);
+    color: #d1fae5; font-size: .68rem; font-weight: 700;
+    padding: .25rem .7rem; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: .07em;
+    margin-bottom: .5rem;
+}
+.profile-status .dot { width: 6px; height: 6px; border-radius: 50%; background: #34d399; box-shadow: 0 0 8px #34d399; }
+.profile-name {
+    font-size: 1.7rem; font-weight: 800; margin: 0 0 .35rem;
+    text-transform: capitalize; letter-spacing: -.01em;
+}
+.profile-doc {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: rgba(255,255,255,.15); padding: .3rem .85rem;
+    border-radius: 10px; font-family: 'JetBrains Mono', monospace;
+    font-size: .82rem; font-weight: 600; margin-bottom: .85rem;
+}
+.profile-doc strong { font-weight: 800; }
+.profile-meta {
+    display: flex; gap: 1rem; flex-wrap: wrap;
+    font-size: .82rem; opacity: .92;
+}
+.profile-meta-item { display: flex; align-items: center; gap: .4rem; }
+.profile-meta-item i { width: 16px; opacity: .8; }
+
+.profile-actions {
+    display: flex; gap: .5rem; flex-wrap: wrap;
+    align-self: flex-start; margin-top: .25rem;
+}
+.btn-hero {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .55rem 1rem; border-radius: 10px;
+    background: rgba(255,255,255,.2); border: 1.5px solid rgba(255,255,255,.3);
+    color: #fff; font-weight: 600; font-size: .8rem;
+    text-decoration: none; cursor: pointer;
+    transition: all .2s; backdrop-filter: blur(10px);
+}
+.btn-hero:hover { background: rgba(255,255,255,.32); color: #fff; transform: translateY(-1px); }
+.btn-hero.solid { background: #fff; color: #4f46e5; border-color: #fff; }
+.btn-hero.solid:hover { background: #f0f0ff; color: #3730a3; }
+
+/* ════════════════════════════════════════
+   STAT CARDS
+═══════════════════════════════════════ */
+.stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.stat-card {
+    background: #fff; border-radius: 14px; padding: 1.15rem 1.25rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    border: 1px solid #e2e8f0;
+    display: flex; align-items: center; gap: 1rem;
+    position: relative; overflow: hidden;
+    transition: all .25s;
+}
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(0,0,0,.1); }
+.stat-card::after {
+    content: ''; position: absolute; top: -10px; right: -10px;
+    width: 70px; height: 70px; border-radius: 50%;
+    background: var(--c); opacity: .08;
+}
+.stat-ico {
+    width: 46px; height: 46px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 1rem; flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+}
+.stat-num { font-size: 1.55rem; font-weight: 800; color: #0f172a; line-height: 1; margin-bottom: .15rem; }
+.stat-lbl {
+    font-size: .65rem; font-weight: 700; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: .07em;
+}
+.stat-extra { font-size: .7rem; color: #64748b; margin-top: .15rem; }
+
+/* ════════════════════════════════════════
+   CONTENT CARDS
+═══════════════════════════════════════ */
+.card-d {
+    background: #fff; border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    border: 1px solid #e2e8f0;
+    overflow: hidden; margin-bottom: 1.25rem;
+}
+.card-d-head {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+}
+.card-d-title {
+    margin: 0; font-size: .85rem; font-weight: 700; color: #0f172a;
+    display: flex; align-items: center; gap: .55rem;
+}
+.card-d-title i { color: #4f46e5; }
+.card-d-count {
+    font-size: .7rem; font-weight: 700;
+    background: #e0e7ff; color: #4f46e5;
+    padding: .2rem .6rem; border-radius: 12px;
+}
+
+.info-grid { padding: 0; }
+.info-row {
+    display: flex; align-items: center; gap: 1rem;
+    padding: .75rem 1.25rem; border-bottom: 1px dashed #f1f5f9;
+    font-size: .85rem;
+}
+.info-row:last-child { border-bottom: none; }
+.info-row .info-ico {
+    width: 32px; height: 32px; border-radius: 9px;
+    background: #f1f5f9; color: #4f46e5;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .75rem; flex-shrink: 0;
+}
+.info-row .info-content { flex: 1; min-width: 0; }
+.info-row .info-lbl {
+    font-size: .65rem; font-weight: 700; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: .07em;
+}
+.info-row .info-val {
+    color: #0f172a; font-weight: 600; font-size: .85rem;
+    word-break: break-word;
+}
+.info-row .info-val.empty { color: #cbd5e1; font-style: italic; font-weight: 400; }
+.info-copy {
+    background: #f1f5f9; border: none; color: #64748b;
+    width: 28px; height: 28px; border-radius: 7px;
+    cursor: pointer; transition: all .2s;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .7rem;
+}
+.info-copy:hover { background: #4f46e5; color: #fff; }
+
+/* ── Tabs ── */
+.tabs {
+    display: flex; gap: .25rem; padding: .35rem;
+    background: #f1f5f9; border-radius: 10px;
+    margin-bottom: 1rem;
+}
+.tab {
+    flex: 1; padding: .5rem .85rem;
+    background: transparent; border: none;
+    color: #64748b; font-weight: 600; font-size: .8rem;
+    border-radius: 8px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: .4rem;
+    transition: all .2s;
+}
+.tab.active { background: #fff; color: #0f172a; box-shadow: 0 2px 6px rgba(0,0,0,.08); }
+.tab:hover:not(.active) { color: #0f172a; }
+.tab .badge {
+    background: #e0e7ff; color: #4f46e5;
+    font-size: .65rem; padding: .1rem .45rem;
+    border-radius: 10px; font-weight: 700;
+}
+.tab.active .badge { background: #4f46e5; color: #fff; }
+
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* ── Tabla envíos ── */
+.table { margin: 0; }
+.table thead th {
+    background: #f8fafc; font-size: .65rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .07em; color: #94a3b8;
+    border-bottom: 1px solid #e2e8f0; padding: .75rem 1rem;
+    white-space: nowrap;
+}
+.table tbody td {
+    padding: .8rem 1rem; vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9; font-size: .82rem; color: #475569;
+}
+.table tbody tr:last-child td { border-bottom: none; }
+.table tbody tr { transition: background .15s; cursor: pointer; }
+.table tbody tr:hover td { background: #f8fafc; color: #0f172a; }
+
+.code-link {
+    font-family: 'JetBrains Mono', monospace; font-size: .75rem; font-weight: 700;
+    color: #4f46e5; text-decoration: none;
+}
+.code-link:hover { color: #3730a3; text-decoration: underline; }
+
+.av-mini {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, #4f46e5, #3b82f6);
+    color: #fff; font-size: .68rem; font-weight: 800;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+
+.pill {
+    display: inline-flex; align-items: center; gap: .25rem;
+    padding: .15rem .55rem; border-radius: 12px;
+    font-size: .65rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .04em;
+}
+.pill-PE { background: #f1f5f9; color: #475569; }
+.pill-TR { background: #dbeafe; color: #1d4ed8; }
+.pill-DE { background: #fef3c7; color: #b45309; }
+.pill-EN { background: #d1fae5; color: #047857; }
+.pill-DV { background: #fee2e2; color: #b91c1c; }
+
+.es {
+    text-align: center; padding: 3rem 1rem;
+    color: #94a3b8;
+}
+.es-icon {
+    width: 56px; height: 56px; border-radius: 14px;
+    background: #f1f5f9; color: #cbd5e1;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1rem; font-size: 1.4rem;
+}
+.es h6 { font-size: .85rem; font-weight: 700; color: #475569; margin: 0 0 .25rem; }
+.es p { font-size: .78rem; margin: 0; }
+
+/* Toast copy */
+.copy-toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #0f172a; color: #fff;
+    padding: .55rem 1.1rem; border-radius: 8px;
+    font-size: .8rem; font-weight: 600;
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    opacity: 0; transition: opacity .25s;
+    z-index: 1100; pointer-events: none;
+}
+.copy-toast.show { opacity: 1; }
+
+@media (max-width: 992px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+    .stats-row { grid-template-columns: 1fr; }
+    .profile-hero { padding: 1.25rem; }
+    .profile-av { width: 80px; height: 80px; font-size: 1.6rem; border-radius: 22px; }
+    .profile-name { font-size: 1.25rem; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="det-page">
+
+    <!-- BREADCRUMB -->
+    <div class="det-head">
+        <div class="det-breadcrumb">
+            <a href="{% url 'cliente_lista' %}"><i class="fas fa-users"></i> Clientes</a>
+            <span class="sep">/</span>
+            <strong>{{ cliente.nombre_completo }}</strong>
+        </div>
+        <a href="{% url 'cliente_lista' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <!-- HERO -->
+    <div class="profile-hero">
+        <div class="profile-row">
+            <div class="profile-av">
+                {{ cliente.nombres|first|upper }}{{ cliente.apellidos|first|upper }}
+            </div>
+            <div class="profile-info">
+                {% if cliente.esta_activo %}
+                <div class="profile-status">
+                    <span class="dot"></span> Cliente activo
+                </div>
+                {% else %}
+                <div class="profile-status" style="background:rgba(239,68,68,.25);border-color:rgba(252,165,165,.4);color:#fecaca;">
+                    Cliente inactivo
+                </div>
+                {% endif %}
+                <h1 class="profile-name">{{ cliente.nombre_completo|lower }}</h1>
+                <div class="profile-doc">
+                    <i class="fas fa-id-card"></i>
+                    <strong>{{ cliente.tipo_doc }}</strong>
+                    <span style="opacity:.5;">·</span>
+                    {{ cliente.nro_doc }}
+                </div>
+                <div class="profile-meta">
+                    {% if cliente.telefono %}
+                    <span class="profile-meta-item"><i class="fas fa-phone"></i> {{ cliente.telefono }}</span>
+                    {% endif %}
+                    {% if cliente.email %}
+                    <span class="profile-meta-item"><i class="fas fa-envelope"></i> {{ cliente.email }}</span>
+                    {% endif %}
+                    <span class="profile-meta-item"><i class="far fa-calendar-alt"></i> Desde {{ cliente.fecha_registro|date:'M Y' }}</span>
+                </div>
+            </div>
+            <div class="profile-actions">
+                <a href="{% url 'encomienda_crear' %}" class="btn-hero solid">
+                    <i class="fas fa-paper-plane"></i> Nueva encomienda
+                </a>
+                <a href="/admin/clientes/cliente/{{ cliente.pk }}/change/" class="btn-hero">
+                    <i class="fas fa-edit"></i> Editar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+        <div class="stat-card" style="--c:#4f46e5;">
+            <div class="stat-ico" style="background:linear-gradient(135deg,#4f46e5,#6d28d9);">
+                <i class="fas fa-paper-plane"></i>
+            </div>
+            <div>
+                <div class="stat-num">{{ total_enviadas }}</div>
+                <div class="stat-lbl">Enviadas</div>
+            </div>
+        </div>
+        <div class="stat-card" style="--c:#3b82f6;">
+            <div class="stat-ico" style="background:linear-gradient(135deg,#3b82f6,#2563eb);">
+                <i class="fas fa-inbox"></i>
+            </div>
+            <div>
+                <div class="stat-num">{{ total_recibidas }}</div>
+                <div class="stat-lbl">Recibidas</div>
+            </div>
+        </div>
+        <div class="stat-card" style="--c:#10b981;">
+            <div class="stat-ico" style="background:linear-gradient(135deg,#10b981,#059669);">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div>
+                <div class="stat-num" style="color:#059669;">S/ {{ total_invertido|floatformat:2 }}</div>
+                <div class="stat-lbl">Total invertido</div>
+            </div>
+        </div>
+        <div class="stat-card" style="--c:#f59e0b;">
+            <div class="stat-ico" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div>
+                <div class="stat-num">{{ total_movimientos }}</div>
+                <div class="stat-lbl">Movimientos</div>
+                <div class="stat-extra">
+                    {% if ultima_actividad %}Última: {{ ultima_actividad|date:'d/m/Y' }}{% else %}Sin actividad{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="row g-3">
+        <!-- Información personal -->
+        <div class="col-lg-4">
+            <div class="card-d">
+                <div class="card-d-head">
+                    <h6 class="card-d-title"><i class="fas fa-id-badge"></i> Información personal</h6>
+                </div>
+                <div class="info-grid">
+                    <div class="info-row">
+                        <div class="info-ico"><i class="fas fa-user"></i></div>
+                        <div class="info-content">
+                            <div class="info-lbl">Nombres</div>
+                            <div class="info-val">{{ cliente.nombres }}</div>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-ico"><i class="fas fa-user-tag"></i></div>
+                        <div class="info-content">
+                            <div class="info-lbl">Apellidos</div>
+                            <div class="info-val">{{ cliente.apellidos }}</div>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-ico"><i class="fas fa-id-card"></i></div>
+                        <div class="info-content">
+                            <div class="info-lbl">Documento</div>
+                            <div class="info-val">{{ cliente.tipo_doc }} · {{ cliente.nro_doc }}</div>
+                        </div>
+                        <button class="info-copy" data-copy="{{ cliente.nro_doc }}" title="Copiar DNI"><i class="fas fa-copy"></i></button>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-ico"><i class="fas fa-phone"></i></div>
+                        <div class="info-content">
+                            <div class="info-lbl">Teléfono</div>
+                            <div class="info-val {% if not cliente.telefono %}empty{% endif %}">
+                                {% if cliente.telefono %}
+                                <a href="tel:{{ cliente.telefono }}" style="color:#0f172a;text-decoration:none;border-bottom:1.5px dashed #cbd5e1;">{{ cliente.telefono }}</a>
+                                <a href="https://wa.me/51{{ cliente.telefono }}" target="_blank" style="margin-left:.5rem;color:#25d366;font-size:.85rem;" title="Abrir WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                                {% else %}No registrado{% endif %}
+                            </div>
+                        </div>
+                        {% if cliente.telefono %}
+                        <button class="info-copy" data-copy="{{ cliente.telefono }}" title="Copiar"><i class="fas fa-copy"></i></button>
+                        {% endif %}
+                    </div>
+                    <div class="info-row">
+                        <div class="info-ico"><i class="fas fa-envelope"></i></div>
+                        <div class="info-content">
+                            <div class="info-lbl">Correo</div>
+                            <div class="info-val {% if not cliente.email %}empty{% endif %}" style="font-size:.78rem;">
+                                {% if cliente.email %}
+                                <a href="mailto:{{ cliente.email }}" style="color:#0f172a;text-decoration:none;border-bottom:1.5px dashed #cbd5e1;">{{ cliente.email }}</a>
+                                {% else %}No registrado{% endif %}
+                            </div>
+                        </div>
+                        {% if cliente.email %}
+                        <button class="info-copy" data-copy="{{ cliente.email }}" title="Copiar"><i class="fas fa-copy"></i></button>
+                        {% endif %}
+                    </div>
+                    <div class="info-row">
+                        <div class="info-ico"><i class="fas fa-map-marker-alt"></i></div>
+                        <div class="info-content">
+                            <div class="info-lbl">Dirección</div>
+                            <div class="info-val {% if not cliente.direccion %}empty{% endif %}" style="font-size:.78rem;">
+                                {{ cliente.direccion|default:'No registrada' }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-ico"><i class="far fa-calendar-plus"></i></div>
+                        <div class="info-content">
+                            <div class="info-lbl">Cliente desde</div>
+                            <div class="info-val">{{ cliente.fecha_registro|date:'d \d\e F \d\e Y' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Encomiendas (con tabs) -->
+        <div class="col-lg-8">
+            <div class="card-d">
+                <div class="card-d-head">
+                    <h6 class="card-d-title"><i class="fas fa-history"></i> Historial de encomiendas</h6>
+                </div>
+                <div style="padding: 1rem 1.25rem 0;">
+                    <div class="tabs">
+                        <button class="tab active" data-tab="enviadas">
+                            <i class="fas fa-paper-plane"></i> Enviadas
+                            <span class="badge">{{ total_enviadas }}</span>
+                        </button>
+                        <button class="tab" data-tab="recibidas">
+                            <i class="fas fa-inbox"></i> Recibidas
+                            <span class="badge">{{ total_recibidas }}</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tab: Enviadas -->
+                <div class="tab-pane active" id="tab-enviadas">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">Código</th>
+                                    <th>Destinatario</th>
+                                    <th>Ruta</th>
+                                    <th>Estado</th>
+                                    <th class="text-end pe-4">Costo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for e in envios_remitente %}
+                                <tr onclick="location.href='{% url 'encomienda_detalle' e.pk %}'">
+                                    <td class="ps-4">
+                                        <a href="{% url 'encomienda_detalle' e.pk %}" class="code-link" onclick="event.stopPropagation()">
+                                            {{ e.codigo }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="av-mini">{{ e.destinatario.nombres|first|upper }}</span>
+                                            <span style="font-weight:600;color:#0f172a;">{{ e.destinatario.nombre_completo|truncatechars:24 }}</span>
+                                        </div>
+                                    </td>
+                                    <td style="font-size:.78rem;">
+                                        {{ e.ruta.origen }} <i class="fas fa-arrow-right" style="color:#cbd5e1;font-size:.65rem;"></i> {{ e.ruta.destino }}
+                                    </td>
+                                    <td><span class="pill pill-{{ e.estado }}">{{ e.get_estado_display }}</span></td>
+                                    <td class="text-end pe-4" style="color:#059669;font-weight:700;">S/ {{ e.costo_envio }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="5" class="p-0 border-0">
+                                    <div class="es">
+                                        <div class="es-icon"><i class="fas fa-paper-plane"></i></div>
+                                        <h6>Sin encomiendas enviadas</h6>
+                                        <p>Este cliente aún no ha enviado paquetes.</p>
+                                    </div>
+                                </td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab: Recibidas -->
+                <div class="tab-pane" id="tab-recibidas">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">Código</th>
+                                    <th>Remitente</th>
+                                    <th>Ruta</th>
+                                    <th>Estado</th>
+                                    <th class="text-end pe-4">Costo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for e in envios_destinatario %}
+                                <tr onclick="location.href='{% url 'encomienda_detalle' e.pk %}'">
+                                    <td class="ps-4">
+                                        <a href="{% url 'encomienda_detalle' e.pk %}" class="code-link" onclick="event.stopPropagation()">
+                                            {{ e.codigo }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="av-mini" style="background:linear-gradient(135deg,#10b981,#059669);">{{ e.remitente.nombres|first|upper }}</span>
+                                            <span style="font-weight:600;color:#0f172a;">{{ e.remitente.nombre_completo|truncatechars:24 }}</span>
+                                        </div>
+                                    </td>
+                                    <td style="font-size:.78rem;">
+                                        {{ e.ruta.origen }} <i class="fas fa-arrow-right" style="color:#cbd5e1;font-size:.65rem;"></i> {{ e.ruta.destino }}
+                                    </td>
+                                    <td><span class="pill pill-{{ e.estado }}">{{ e.get_estado_display }}</span></td>
+                                    <td class="text-end pe-4" style="color:#059669;font-weight:700;">S/ {{ e.costo_envio }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="5" class="p-0 border-0">
+                                    <div class="es">
+                                        <div class="es-icon"><i class="fas fa-inbox"></i></div>
+                                        <h6>Sin encomiendas recibidas</h6>
+                                        <p>Este cliente aún no ha recibido paquetes.</p>
+                                    </div>
+                                </td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="copy-toast" id="copyToast">
+    <i class="fas fa-check"></i> Copiado al portapapeles
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Tabs
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    });
+});
+
+// Copy to clipboard
+const toast = document.getElementById('copyToast');
+document.querySelectorAll('.info-copy').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const text = btn.dataset.copy;
+        try {
+            await navigator.clipboard.writeText(text);
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 1800);
+        } catch (err) {
+            console.error('Copy failed', err);
+        }
+    });
+});
+</script>
+{% endblock %}

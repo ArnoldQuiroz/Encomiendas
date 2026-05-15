@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% block title %}Cupones de descuento{% endblock %}
+
+{% block extra_css %}
+<style>
+.cp-page { max-width: 1100px; margin: 0 auto; }
+.cp-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; }
+.cp-title { display:flex; align-items:center; gap:.85rem; }
+.cp-icon { width:48px; height:48px; border-radius:13px; background:linear-gradient(135deg,#ec4899,#db2777); display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:#fff; box-shadow:0 5px 16px rgba(236,72,153,.35); }
+.cp-title h2 { font-size: 1.25rem; font-weight: 800; margin: 0; }
+.cp-title p { font-size: .8rem; color: #94a3b8; margin: .15rem 0 0; }
+
+.cp-form-card { background:#fff; border-radius:14px; padding:1.5rem; border:1px solid #e2e8f0; box-shadow:0 2px 12px rgba(0,0,0,.05); margin-bottom:1.25rem; }
+.cp-form-card h3 { font-size: .85rem; font-weight: 800; color: #0f172a; margin: 0 0 1rem; display: flex; align-items: center; gap: .55rem; }
+.cp-form-card h3 i { color: #ec4899; }
+
+.cp-form-row { display: grid; grid-template-columns: 1fr 2fr 1fr 1fr 1fr auto; gap: .55rem; }
+.cp-input, .cp-select {
+    border: 1.5px solid #e2e8f0; border-radius: 9px;
+    padding: .55rem .85rem; font-size: .85rem; outline: none;
+    font-family: inherit;
+}
+.cp-input:focus, .cp-select:focus { border-color: #ec4899; box-shadow: 0 0 0 3px rgba(236,72,153,.1); }
+.btn-cp { background: linear-gradient(135deg, #ec4899, #db2777); color: #fff; border: none; border-radius: 9px; padding: 0 1.1rem; font-weight: 700; font-size: .82rem; cursor: pointer; display: inline-flex; align-items: center; gap: .4rem; }
+
+.cp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+
+.cupon {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #fff; border-radius: 16px; padding: 1.4rem;
+    position: relative; overflow: hidden;
+    box-shadow: 0 8px 24px rgba(245,158,11,.3);
+    transition: all .3s;
+}
+.cupon:hover { transform: translateY(-4px); box-shadow: 0 14px 32px rgba(245,158,11,.45); }
+.cupon.inactivo { background: linear-gradient(135deg, #94a3b8, #64748b); box-shadow: 0 4px 16px rgba(0,0,0,.15); }
+.cupon.expirado { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+
+.cupon::before {
+    content: ''; position: absolute; top: 50%; left: -10px; width: 20px; height: 20px;
+    border-radius: 50%; background: #f1f5f9; transform: translateY(-50%);
+}
+.cupon::after {
+    content: ''; position: absolute; top: 50%; right: -10px; width: 20px; height: 20px;
+    border-radius: 50%; background: #f1f5f9; transform: translateY(-50%);
+}
+
+.cupon-head {
+    border-bottom: 1.5px dashed rgba(255,255,255,.4);
+    padding-bottom: .75rem; margin-bottom: .75rem;
+    display: flex; justify-content: space-between; align-items: center;
+}
+.cupon-codigo {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.05rem; font-weight: 900;
+    letter-spacing: .04em;
+}
+.cupon-tag { background: rgba(255,255,255,.25); font-size: .6rem; font-weight: 700; padding: .15rem .55rem; border-radius: 10px; text-transform: uppercase; }
+
+.cupon-valor { font-size: 2.2rem; font-weight: 900; line-height: 1; margin-bottom: .35rem; }
+.cupon-desc { font-size: .82rem; opacity: .9; margin-bottom: .85rem; line-height: 1.4; min-height: 2.3rem; }
+.cupon-meta { font-size: .72rem; opacity: .85; display: flex; justify-content: space-between; align-items: center; }
+.cupon-actions { display: flex; gap: .35rem; margin-top: .85rem; }
+.cupon-actions button {
+    flex: 1; background: rgba(255,255,255,.25); border: 1px solid rgba(255,255,255,.3);
+    color: #fff; padding: .4rem; border-radius: 7px;
+    font-size: .72rem; font-weight: 700; cursor: pointer;
+}
+.cupon-actions button:hover { background: rgba(255,255,255,.4); }
+
+.empty { text-align: center; padding: 3rem; color: #94a3b8; background: #fff; border-radius: 14px; }
+
+@media (max-width: 768px) {
+    .cp-form-row { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cp-page">
+    <div class="cp-head">
+        <div class="cp-title">
+            <div class="cp-icon"><i class="fas fa-ticket-alt"></i></div>
+            <div>
+                <h2>Cupones de descuento</h2>
+                <p>{{ cupones|length }} cupón{{ cupones|length|pluralize:"es" }} en total</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form crear -->
+    <div class="cp-form-card">
+        <h3><i class="fas fa-plus-circle"></i> Crear nuevo cupón</h3>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="accion" value="crear">
+            <div class="cp-form-row">
+                <input type="text" name="codigo" class="cp-input" placeholder="VERANO2026" required style="text-transform:uppercase;">
+                <input type="text" name="descripcion" class="cp-input" placeholder="Descripción del cupón...">
+                <select name="tipo" class="cp-select">
+                    <option value="PCT">% Porcentaje</option>
+                    <option value="FIJ">S/ Monto fijo</option>
+                </select>
+                <input type="number" name="valor" class="cp-input" placeholder="Valor" step="0.01" min="0" required>
+                <input type="number" name="usos_maximos" class="cp-input" placeholder="Usos (0=∞)" min="0" value="0">
+                <button type="submit" class="btn-cp"><i class="fas fa-plus"></i> Crear</button>
+            </div>
+            <input type="date" name="fecha_fin" class="cp-input" style="margin-top:.55rem;max-width:200px;" placeholder="Vence (opcional)">
+        </form>
+    </div>
+
+    <!-- Lista -->
+    {% if cupones %}
+    <div class="cp-grid">
+        {% for c in cupones %}
+        <div class="cupon {% if not c.activo %}inactivo{% elif not c.valido %}expirado{% endif %}">
+            <div class="cupon-head">
+                <div class="cupon-codigo">{{ c.codigo }}</div>
+                <div class="cupon-tag">
+                    {% if not c.activo %}🔒 Inactivo
+                    {% elif not c.valido %}⏰ Expirado
+                    {% else %}✓ Activo{% endif %}
+                </div>
+            </div>
+            <div class="cupon-valor">
+                {% if c.tipo == 'PCT' %}{{ c.valor|floatformat:0 }}%{% else %}S/ {{ c.valor|floatformat:2 }}{% endif %}
+            </div>
+            <div class="cupon-desc">{{ c.descripcion|default:"Sin descripción" }}</div>
+            <div class="cupon-meta">
+                <span><i class="fas fa-users"></i> {{ c.usos_actuales }}{% if c.usos_maximos %} / {{ c.usos_maximos }}{% else %} usos{% endif %}</span>
+                <span>{% if c.fecha_fin %}<i class="far fa-calendar-alt"></i> {{ c.fecha_fin|date:'d/m/Y' }}{% else %}Sin caducidad{% endif %}</span>
+            </div>
+            <div class="cupon-actions">
+                <form method="post" style="flex:1;display:flex;">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="toggle">
+                    <input type="hidden" name="id" value="{{ c.pk }}">
+                    <button type="submit" style="flex:1;">
+                        <i class="fas fa-{% if c.activo %}pause{% else %}play{% endif %}"></i>
+                        {% if c.activo %}Pausar{% else %}Activar{% endif %}
+                    </button>
+                </form>
+                <form method="post" style="flex:1;display:flex;" onsubmit="return confirm('¿Eliminar este cupón?')">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="eliminar">
+                    <input type="hidden" name="id" value="{{ c.pk }}">
+                    <button type="submit" style="flex:1;background:rgba(0,0,0,.2);">
+                        <i class="fas fa-trash"></i> Borrar
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty">
+        <i class="fas fa-ticket-alt" style="font-size:3rem;color:#cbd5e1;display:block;margin-bottom:.6rem;"></i>
+        <h6 style="color:#0f172a;font-weight:800;">Aún no hay cupones</h6>
+        <p style="font-size:.85rem;margin-top:.35rem;">Crea tu primer cupón con el formulario de arriba 👆</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

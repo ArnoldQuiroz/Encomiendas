@@ -1,0 +1,242 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Etiqueta {{ encomienda.codigo }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #f1f5f9; padding: 2rem;
+        }
+
+        .toolbar {
+            max-width: 1000px; margin: 0 auto 1.5rem;
+            display: flex; justify-content: space-between; align-items: center;
+            gap: .65rem; flex-wrap: wrap;
+        }
+        .toolbar h1 {
+            font-size: 1.05rem; font-weight: 800; margin: 0;
+            display: flex; align-items: center; gap: .55rem; color: #475569;
+        }
+        .btn { display:inline-flex; align-items:center; gap:.5rem; padding:.6rem 1.2rem; border-radius:10px; font-weight:700; font-size:.85rem; text-decoration:none; cursor:pointer; border:none; transition:all .2s; }
+        .btn-print { background:#4f46e5; color:#fff; box-shadow:0 4px 14px rgba(79,70,229,.35); }
+        .btn-print:hover { transform: translateY(-2px); }
+        .btn-back { background:#fff; color:#475569; border:1.5px solid #e2e8f0; }
+        .btn-back:hover { border-color:#ef4444; color:#ef4444; }
+
+        /* ─── ETIQUETA 10×7cm ─── */
+        .etiqueta {
+            width: 10cm; height: 7cm;
+            background: #fff;
+            margin: 0 auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,.12);
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* HEADER */
+        .et-head {
+            background: linear-gradient(135deg, #1e1b4b, #4f46e5);
+            color: #fff;
+            padding: 2mm 3mm;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .et-brand { font-size: 8pt; font-weight: 800; letter-spacing: .03em; display: flex; align-items: center; gap: 1.2mm; }
+        .et-brand i { font-size: 9pt; }
+        .et-codigo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 7pt; font-weight: 700;
+            background: rgba(255,255,255,.18);
+            padding: .5mm 1.5mm; border-radius: 1mm;
+        }
+
+        /* BODY */
+        .et-body { padding: 2mm 3mm; display: grid; grid-template-columns: 1fr 22mm; gap: 2mm; }
+
+        .et-personas {
+            display: flex; flex-direction: column; gap: 1.5mm;
+            font-size: 6.5pt;
+            line-height: 1.25;
+        }
+        .et-bloque {
+            background: #f8fafc;
+            border-left: 1mm solid var(--c, #4f46e5);
+            padding: 1mm 2mm;
+            border-radius: 0 1mm 1mm 0;
+        }
+        .et-bloque-lbl {
+            font-size: 5.5pt; font-weight: 700; color: #94a3b8;
+            text-transform: uppercase; letter-spacing: .04em;
+            margin-bottom: .3mm;
+        }
+        .et-bloque-nombre {
+            font-size: 7.5pt; font-weight: 800; color: #0f172a;
+            line-height: 1.15;
+            margin-bottom: .3mm;
+        }
+        .et-bloque-detalle {
+            font-size: 5.5pt; color: #475569;
+            line-height: 1.3;
+        }
+        .et-bloque-doc {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 5.5pt; color: #4f46e5; font-weight: 700;
+        }
+
+        /* QR */
+        .et-qr {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; gap: 1mm;
+            border-left: 1px dashed #cbd5e1;
+            padding-left: 2mm;
+        }
+        .et-qr-img { width: 18mm; height: 18mm; padding: .5mm; background: #fff; border: 1px solid #e2e8f0; border-radius: 1mm; }
+        .et-qr-img img { width: 100%; height: 100%; }
+        .et-qr-text { font-size: 5pt; color: #94a3b8; text-align: center; line-height: 1.1; }
+
+        /* FOOTER con info de ruta */
+        .et-foot {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #fff; padding: 1.5mm 3mm;
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 6.5pt; font-weight: 700;
+        }
+        .et-ruta-arrow { display: inline-block; margin: 0 1.2mm; opacity: .8; }
+        .et-peso {
+            background: rgba(255,255,255,.25);
+            padding: .3mm 1.5mm; border-radius: 1mm;
+            font-size: 5.5pt;
+        }
+
+        /* Tag de prioridad superpuesto */
+        .et-tag {
+            position: absolute;
+            top: 8mm; right: -8mm;
+            background: #ef4444; color: #fff;
+            font-size: 5.5pt; font-weight: 800;
+            padding: .8mm 8mm;
+            transform: rotate(45deg);
+            text-transform: uppercase; letter-spacing: .05em;
+        }
+
+        /* Hint para guías de corte */
+        .et-corte {
+            position: absolute;
+            border-top: 1px dashed #cbd5e1;
+            width: 100%; top: 50%;
+            pointer-events: none;
+            display: none;  /* Solo en preview, no se imprime */
+        }
+
+        /* ── PRINT styles ── */
+        @media print {
+            body { background: #fff; padding: 0; margin: 0; }
+            .toolbar { display: none !important; }
+            .etiqueta {
+                box-shadow: none; margin: 0;
+                page-break-after: always;
+            }
+            @page { margin: 0; size: 10cm 7cm; }
+        }
+
+        /* Preview mode info */
+        .preview-info {
+            max-width: 10cm; margin: 1rem auto 0;
+            font-size: .8rem; color: #94a3b8;
+            text-align: center; line-height: 1.5;
+        }
+        .preview-info i { color: #4f46e5; }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <h1><i class="fas fa-tag"></i> Etiqueta del paquete · {{ encomienda.codigo }}</h1>
+        <div style="display:flex;gap:.55rem;">
+            <a href="{% url 'encomienda_detalle' encomienda.pk %}" class="btn btn-back">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+            <button onclick="window.print()" class="btn btn-print">
+                <i class="fas fa-print"></i> Imprimir etiqueta
+            </button>
+        </div>
+    </div>
+
+    <!-- ETIQUETA 10×7cm -->
+    <div class="etiqueta">
+        <!-- HEADER -->
+        <div class="et-head">
+            <div class="et-brand">
+                <i class="fas fa-shipping-fast"></i> ENCOMIENDAS
+            </div>
+            <div class="et-codigo">{{ encomienda.codigo }}</div>
+        </div>
+
+        <!-- Tag de prioridad si aplica -->
+        {% for tag in encomienda.tags_info %}
+            {% if tag.codigo == 'FRAGIL' or tag.codigo == 'PRIORITARIO' %}
+            <div class="et-tag" style="background:{{ tag.color }};">{{ tag.label }}</div>
+            {% endif %}
+        {% endfor %}
+
+        <!-- BODY -->
+        <div class="et-body">
+            <div class="et-personas">
+                <div class="et-bloque" style="--c:#4f46e5;">
+                    <div class="et-bloque-lbl">📦 De (Remitente)</div>
+                    <div class="et-bloque-nombre">{{ encomienda.remitente.nombre_completo|truncatechars:32 }}</div>
+                    <div class="et-bloque-doc">{{ encomienda.remitente.tipo_doc }} {{ encomienda.remitente.nro_doc }}</div>
+                    {% if encomienda.remitente.telefono %}<div class="et-bloque-detalle">📞 {{ encomienda.remitente.telefono }}</div>{% endif %}
+                </div>
+
+                <div class="et-bloque" style="--c:#10b981;">
+                    <div class="et-bloque-lbl">🏁 Para (Destinatario)</div>
+                    <div class="et-bloque-nombre">{{ encomienda.destinatario.nombre_completo|truncatechars:32 }}</div>
+                    <div class="et-bloque-doc">{{ encomienda.destinatario.tipo_doc }} {{ encomienda.destinatario.nro_doc }}</div>
+                    {% if encomienda.destinatario.telefono %}<div class="et-bloque-detalle">📞 {{ encomienda.destinatario.telefono }}</div>{% endif %}
+                    {% if encomienda.destinatario.direccion %}<div class="et-bloque-detalle">📍 {{ encomienda.destinatario.direccion|truncatechars:50 }}</div>{% endif %}
+                </div>
+            </div>
+
+            <!-- QR -->
+            <div class="et-qr">
+                <div class="et-qr-img" id="qr-etiqueta"></div>
+                <div class="et-qr-text">Escanea para<br>rastrear el paquete</div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="et-foot">
+            <div>
+                <i class="fas fa-route"></i>
+                {{ encomienda.ruta.origen }}
+                <span class="et-ruta-arrow">→</span>
+                {{ encomienda.ruta.destino }}
+            </div>
+            <div class="et-peso">{{ encomienda.peso_kg }} kg</div>
+        </div>
+    </div>
+
+    <p class="preview-info">
+        <i class="fas fa-info-circle"></i> Tamaño real: <strong>10 × 7 cm</strong>.
+        Imprime en hoja A4 (cabe 1 etiqueta) o en papel adhesivo del tamaño exacto.
+    </p>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script>
+        const trackingUrl = `${window.location.origin}/track/{{ encomienda.codigo }}/`;
+        const qr = qrcode(0, 'M');
+        qr.addData(trackingUrl);
+        qr.make();
+        document.getElementById('qr-etiqueta').innerHTML = qr.createImgTag(3, 0);
+    </script>
+</body>
+</html>

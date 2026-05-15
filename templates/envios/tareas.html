@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+{% block title %}Mis Tareas{% endblock %}
+
+{% block extra_css %}
+<style>
+.tar-page { max-width: 1000px; margin: 0 auto; }
+.tar-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem; }
+.tar-title { display:flex; align-items:center; gap:.85rem; }
+.tar-icon {
+    width: 48px; height: 48px; border-radius: 13px;
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; color: #fff;
+    box-shadow: 0 5px 16px rgba(139,92,246,.35);
+}
+.tar-title h2 { font-size: 1.25rem; font-weight: 800; margin: 0; }
+.tar-title p { font-size: .8rem; color: #94a3b8; margin: .15rem 0 0; }
+
+.alert-vencidas {
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    border: 1.5px solid #fca5a5; border-radius: 12px;
+    padding: .9rem 1.1rem; margin-bottom: 1.25rem;
+    display: flex; align-items: center; gap: .85rem;
+}
+.alert-vencidas i { color: #ef4444; font-size: 1.2rem; }
+.alert-vencidas strong { color: #b91c1c; font-size: .9rem; }
+.alert-vencidas span { color: #991b1b; font-size: .85rem; }
+
+/* Form crear */
+.tar-form-card {
+    background: #fff; border-radius: 14px; padding: 1.25rem 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    border: 1px solid #e2e8f0;
+    margin-bottom: 1.25rem;
+}
+.tar-form-card h3 {
+    font-size: .85rem; font-weight: 800; color: #0f172a; margin: 0 0 .85rem;
+    display: flex; align-items: center; gap: .5rem;
+}
+.tar-form-card h3 i { color: #8b5cf6; }
+.tar-row { display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: .55rem; }
+.tar-input, .tar-select {
+    border: 1.5px solid #e2e8f0; border-radius: 9px;
+    padding: .55rem .85rem; font-size: .85rem; outline: none;
+    transition: all .2s; font-family: inherit;
+}
+.tar-input:focus, .tar-select:focus { border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,.1); }
+.btn-add {
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    color: #fff; border: none; border-radius: 9px;
+    padding: 0 1.2rem; font-weight: 700; font-size: .82rem; cursor: pointer;
+    display: inline-flex; align-items: center; gap: .4rem;
+}
+.btn-add:hover { transform: translateY(-1px); }
+
+/* Listas */
+.tar-section {
+    background: #fff; border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    border: 1px solid #e2e8f0; overflow: hidden;
+    margin-bottom: 1.25rem;
+}
+.tar-section-head {
+    padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9;
+    display: flex; align-items: center; justify-content: space-between;
+}
+.tar-section-title {
+    font-size: .85rem; font-weight: 700; color: #0f172a;
+    display: flex; align-items: center; gap: .5rem;
+}
+.tar-count {
+    background: #e0e7ff; color: #4f46e5;
+    font-size: .68rem; font-weight: 700;
+    padding: .2rem .6rem; border-radius: 12px;
+}
+
+.tar-item {
+    display: flex; align-items: center; gap: .85rem;
+    padding: .85rem 1.25rem;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background .12s;
+}
+.tar-item:last-child { border-bottom: none; }
+.tar-item:hover { background: #fafbff; }
+.tar-item.vencida { background: #fef2f2; }
+
+.tar-check {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid #cbd5e1; cursor: pointer;
+    background: #fff; display: flex; align-items: center; justify-content: center;
+    transition: all .15s; flex-shrink: 0;
+}
+.tar-check:hover { border-color: #10b981; }
+.tar-check.done { background: #10b981; border-color: #10b981; color: #fff; }
+
+.tar-body { flex: 1; min-width: 0; }
+.tar-titulo { font-size: .9rem; font-weight: 700; color: #0f172a; line-height: 1.3; }
+.tar-titulo.done { text-decoration: line-through; color: #94a3b8; font-weight: 500; }
+.tar-meta { display: flex; align-items: center; gap: .65rem; flex-wrap: wrap; margin-top: .2rem; font-size: .72rem; color: #64748b; }
+
+.tar-pri {
+    display: inline-flex; align-items: center; gap: .25rem;
+    padding: .12rem .5rem; border-radius: 10px;
+    font-size: .6rem; font-weight: 700; text-transform: uppercase;
+}
+.tar-pri.ALTA  { background: #fee2e2; color: #b91c1c; }
+.tar-pri.MEDIA { background: #fef3c7; color: #b45309; }
+.tar-pri.BAJA  { background: #f1f5f9; color: #64748b; }
+
+.tar-vencida-tag {
+    display: inline-flex; align-items: center; gap: .25rem;
+    background: #fee2e2; color: #b91c1c;
+    font-size: .6rem; font-weight: 700; padding: .12rem .5rem;
+    border-radius: 10px; text-transform: uppercase;
+}
+
+.btn-del {
+    background: transparent; border: none; color: #cbd5e1;
+    cursor: pointer; padding: .35rem; font-size: .85rem;
+    transition: color .15s;
+}
+.btn-del:hover { color: #ef4444; }
+
+.tar-empty {
+    text-align: center; padding: 3rem 1.5rem;
+    color: #94a3b8; font-size: .85rem;
+}
+.tar-empty i { font-size: 2rem; color: #cbd5e1; margin-bottom: .6rem; display: block; }
+
+@media (max-width: 768px) {
+    .tar-row { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tar-page">
+    <div class="tar-head">
+        <div class="tar-title">
+            <div class="tar-icon"><i class="fas fa-tasks"></i></div>
+            <div>
+                <h2>Mis Tareas</h2>
+                <p>{{ pendientes|length }} pendiente{{ pendientes|length|pluralize:"s" }} · {{ completadas|length }} completada{{ completadas|length|pluralize:"s" }}</p>
+            </div>
+        </div>
+    </div>
+
+    {% if total_vencidas > 0 %}
+    <div class="alert-vencidas">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+            <strong>{{ total_vencidas }} tarea{{ total_vencidas|pluralize:"s" }} vencida{{ total_vencidas|pluralize:"s" }}</strong><br>
+            <span>Revisa las tareas que pasaron su fecha límite.</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Formulario nueva tarea -->
+    <div class="tar-form-card">
+        <h3><i class="fas fa-plus-circle"></i> Nueva tarea</h3>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="accion" value="crear">
+            <div class="tar-row">
+                <input type="text" name="titulo" class="tar-input" placeholder="¿Qué tienes que hacer?" required>
+                <select name="prioridad" class="tar-select">
+                    <option value="BAJA">🟢 Baja</option>
+                    <option value="MEDIA" selected>🟡 Media</option>
+                    <option value="ALTA">🔴 Alta</option>
+                </select>
+                <input type="date" name="fecha_limite" class="tar-input">
+                <button type="submit" class="btn-add"><i class="fas fa-plus"></i> Crear</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Pendientes -->
+    <div class="tar-section">
+        <div class="tar-section-head">
+            <h6 class="tar-section-title">
+                <i class="far fa-clock" style="color:#f59e0b;"></i> Pendientes
+            </h6>
+            <span class="tar-count">{{ pendientes|length }}</span>
+        </div>
+        {% for t in pendientes %}
+        <div class="tar-item {% if t.vencida %}vencida{% endif %}">
+            <form method="post" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="toggle">
+                <input type="hidden" name="id" value="{{ t.pk }}">
+                <button type="submit" class="tar-check" title="Marcar como completada"></button>
+            </form>
+            <div class="tar-body">
+                <div class="tar-titulo">{{ t.titulo }}</div>
+                <div class="tar-meta">
+                    <span class="tar-pri {{ t.prioridad }}">
+                        {% if t.prioridad == 'ALTA' %}🔴{% elif t.prioridad == 'MEDIA' %}🟡{% else %}🟢{% endif %}
+                        {{ t.get_prioridad_display }}
+                    </span>
+                    {% if t.fecha_limite %}
+                    <span><i class="far fa-calendar-alt"></i> {{ t.fecha_limite|date:'d M Y' }}</span>
+                    {% endif %}
+                    {% if t.vencida %}
+                    <span class="tar-vencida-tag"><i class="fas fa-exclamation-circle"></i> Vencida</span>
+                    {% endif %}
+                    <span><i class="far fa-clock"></i> Creada {{ t.fecha_creacion|date:'d M' }}</span>
+                </div>
+            </div>
+            <form method="post" style="display:inline;" onsubmit="return confirm('¿Eliminar esta tarea?')">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="eliminar">
+                <input type="hidden" name="id" value="{{ t.pk }}">
+                <button type="submit" class="btn-del" title="Eliminar"><i class="fas fa-times"></i></button>
+            </form>
+        </div>
+        {% empty %}
+        <div class="tar-empty">
+            <i class="fas fa-check-double"></i>
+            ¡No tienes tareas pendientes! 🎉
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Completadas -->
+    {% if completadas %}
+    <div class="tar-section">
+        <div class="tar-section-head">
+            <h6 class="tar-section-title">
+                <i class="fas fa-check-circle" style="color:#10b981;"></i> Completadas recientemente
+            </h6>
+            <span class="tar-count">{{ completadas|length }}</span>
+        </div>
+        {% for t in completadas %}
+        <div class="tar-item">
+            <form method="post" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="toggle">
+                <input type="hidden" name="id" value="{{ t.pk }}">
+                <button type="submit" class="tar-check done" title="Desmarcar"><i class="fas fa-check"></i></button>
+            </form>
+            <div class="tar-body">
+                <div class="tar-titulo done">{{ t.titulo }}</div>
+                <div class="tar-meta">
+                    {% if t.fecha_completada %}
+                    <span><i class="fas fa-check"></i> Completada {{ t.fecha_completada|date:'d M H:i' }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <form method="post" style="display:inline;" onsubmit="return confirm('¿Eliminar esta tarea?')">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="eliminar">
+                <input type="hidden" name="id" value="{{ t.pk }}">
+                <button type="submit" class="btn-del"><i class="fas fa-times"></i></button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

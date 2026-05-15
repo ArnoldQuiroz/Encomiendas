@@ -1,0 +1,19 @@
+{% extends 'errors/_base_error.html' %}
+
+{% block error_title %}Cuenta bloqueada{% endblock %}
+{% block icon_color %}#ef4444{% endblock %}
+{% block icon_bg %}rgba(239,68,68,.15){% endblock %}
+{% block icon_border %}rgba(239,68,68,.4){% endblock %}
+{% block icon_class %}fas fa-shield-alt{% endblock %}
+
+{% block error_code %}🔒{% endblock %}
+{% block error_heading %}Cuenta temporalmente bloqueada{% endblock %}
+{% block error_description %}
+Detectamos demasiados intentos fallidos de inicio de sesión. Por seguridad, hemos bloqueado el acceso por <strong>30 minutos</strong>. Si olvidaste tu contraseña, contacta al administrador.
+{% endblock %}
+
+{% block error_actions %}
+<a href="/login/" class="err-btn solid">
+    <i class="fas fa-sign-in-alt"></i> Volver al login
+</a>
+{% endblock %}

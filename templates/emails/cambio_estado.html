@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ encomienda.codigo }} — Actualización</title>
+</head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,sans-serif;color:#0f172a;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:20px 0;">
+        <tr><td align="center">
+            <table width="100%" style="max-width:560px;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.06);">
+                <!-- Header -->
+                <tr><td style="background:linear-gradient(135deg,#4f46e5,#6366f1,#8b5cf6);padding:32px 32px 28px;color:#fff;">
+                    <p style="margin:0 0 6px;font-size:13px;opacity:.85;text-transform:uppercase;letter-spacing:.07em;font-weight:700;">
+                        🚚 Sistema de Encomiendas
+                    </p>
+                    <h1 style="margin:0;font-size:24px;font-weight:800;line-height:1.25;">
+                        {% if encomienda.estado == 'TR' %}Tu paquete está en camino
+                        {% elif encomienda.estado == 'DE' %}Llegó a destino
+                        {% elif encomienda.estado == 'EN' %}¡Entregado con éxito!
+                        {% elif encomienda.estado == 'DV' %}Tu paquete fue devuelto
+                        {% else %}Actualización de tu paquete{% endif %}
+                    </h1>
+                    <div style="margin-top:14px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.22);border-radius:8px;padding:8px 14px;display:inline-block;font-family:monospace;font-size:14px;font-weight:700;">
+                        {{ encomienda.codigo }}
+                    </div>
+                </td></tr>
+
+                <!-- Body -->
+                <tr><td style="padding:32px;">
+                    <p style="margin:0 0 18px;font-size:15px;line-height:1.55;color:#475569;">
+                        Hola <strong>{{ encomienda.destinatario.nombres }}</strong>,<br>
+                        Te informamos que tu paquete tuvo una actualización:
+                    </p>
+
+                    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:20px;">
+                        <tr><td style="padding:14px 18px;font-size:13px;">
+                            <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;font-size:11px;">Estado actual</span><br>
+                            <span style="font-size:18px;font-weight:800;color:#0f172a;">{{ encomienda.get_estado_display }}</span>
+                        </td></tr>
+                        <tr><td style="padding:14px 18px;border-top:1px dashed #cbd5e1;font-size:13px;">
+                            <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;font-size:11px;">Ruta</span><br>
+                            <span style="font-size:14px;font-weight:600;color:#0f172a;">{{ encomienda.ruta.origen }} → {{ encomienda.ruta.destino }}</span>
+                        </td></tr>
+                        {% if encomienda.fecha_entrega_est %}
+                        <tr><td style="padding:14px 18px;border-top:1px dashed #cbd5e1;font-size:13px;">
+                            <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;font-size:11px;">Fecha estimada</span><br>
+                            <span style="font-size:14px;font-weight:600;color:#0f172a;">{{ encomienda.fecha_entrega_est|date:'d/m/Y' }}</span>
+                        </td></tr>
+                        {% endif %}
+                    </table>
+
+                    <p style="margin:0 0 22px;font-size:14px;color:#475569;line-height:1.55;">
+                        Puedes rastrear tu paquete en tiempo real desde el siguiente enlace:
+                    </p>
+
+                    <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
+                        <tr><td style="background:linear-gradient(135deg,#4f46e5,#3b82f6);border-radius:10px;">
+                            <a href="{{ tracking_url }}" style="display:inline-block;padding:14px 28px;color:#fff;text-decoration:none;font-weight:700;font-size:14px;">
+                                🔍 Rastrear paquete →
+                            </a>
+                        </td></tr>
+                    </table>
+
+                    <p style="margin:24px 0 0;font-size:12px;color:#94a3b8;text-align:center;line-height:1.45;">
+                        Si no esperabas este mensaje, ignóralo.<br>
+                        Para soporte contacta a la empresa.
+                    </p>
+                </td></tr>
+
+                <!-- Footer -->
+                <tr><td style="background:#f8fafc;padding:18px 32px;border-top:1px solid #e2e8f0;font-size:12px;color:#94a3b8;text-align:center;">
+                    Sistema de Gestión de Encomiendas © 2026
+                </td></tr>
+            </table>
+        </td></tr>
+    </table>
+</body>
+</html>

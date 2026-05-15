@@ -1,0 +1,19 @@
+{% extends 'errors/_base_error.html' %}
+
+{% block error_title %}Demasiadas peticiones{% endblock %}
+{% block icon_color %}#a78bfa{% endblock %}
+{% block icon_bg %}rgba(167,139,250,.15){% endblock %}
+{% block icon_border %}rgba(167,139,250,.4){% endblock %}
+{% block icon_class %}fas fa-stopwatch{% endblock %}
+
+{% block error_code %}429{% endblock %}
+{% block error_heading %}Demasiadas peticiones{% endblock %}
+{% block error_description %}
+Has alcanzado el límite de peticiones por minuto. Espera unos segundos y vuelve a intentarlo. Esta protección evita el abuso del sistema.
+{% endblock %}
+
+{% block error_actions %}
+<a href="javascript:history.back()" class="err-btn solid">
+    <i class="fas fa-arrow-left"></i> Volver
+</a>
+{% endblock %}

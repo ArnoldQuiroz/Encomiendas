@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% block title %}Clientes{% endblock %}
+
+{% block extra_css %}
+<style>
+.ph { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem; }
+.ph h2 { font-size:1.35rem; font-weight:800; color:#0f172a; margin:0; display:flex; align-items:center; gap:.6rem; }
+.ph h2 i { color:#4f46e5; }
+
+/* Search card */
+.fc { background:#fff; border-radius:14px; padding:1rem 1.5rem; box-shadow:0 2px 12px rgba(0,0,0,.06); border:1px solid #e2e8f0; margin-bottom:1.25rem; }
+.fc-row { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; }
+.search-wrap { flex: 1; min-width: 250px; position:relative; }
+.search-wrap .si { position:absolute; left:.95rem; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:.85rem; pointer-events:none; }
+.search-wrap .clear-btn {
+    position: absolute; right: .65rem; top: 50%; transform: translateY(-50%);
+    background: #f1f5f9; border: none; color: #64748b;
+    width: 24px; height: 24px; border-radius: 50%;
+    cursor: pointer; display: none; align-items: center; justify-content: center;
+    font-size: .65rem; transition: all .15s;
+}
+.search-wrap .clear-btn:hover { background: #ef4444; color: #fff; }
+.search-wrap.has-text .clear-btn { display: flex; }
+.search-wrap input {
+    border-radius:10px; border:1.5px solid #e2e8f0;
+    font-size:.875rem; padding:.6rem 2.4rem; width:100%; outline:none;
+    transition:all .2s;
+}
+.search-wrap input:focus { border-color:#4f46e5; box-shadow:0 0 0 3px rgba(79,70,229,.1); }
+
+.filter-info {
+    display: flex; align-items: center; gap: .5rem;
+    font-size: .75rem; color: #64748b;
+    background: #f1f5f9; padding: .4rem .85rem; border-radius: 20px;
+    font-weight: 600;
+}
+.filter-info i { color: #4f46e5; }
+.filter-info strong { color: #0f172a; }
+.filter-info .clear-link {
+    color: #ef4444; text-decoration: none; font-weight: 700;
+    margin-left: .35rem; padding-left: .5rem; border-left: 1px solid #cbd5e1;
+}
+.filter-info .clear-link:hover { text-decoration: underline; }
+
+/* Table */
+.tc { background:#fff; border-radius:14px; box-shadow:0 2px 12px rgba(0,0,0,.06); border:1px solid #e2e8f0; overflow:hidden; }
+.tc-head { padding:.9rem 1.5rem; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; justify-content:space-between; }
+.tc-title { font-size:.85rem; font-weight:700; color:#475569; margin:0; display:flex;align-items:center;gap:.5rem; }
+.tc-title i { color:#4f46e5; }
+.tc-count { font-size:.75rem; font-weight:700; background:#e0e7ff; color:#4f46e5; padding:.2rem .65rem; border-radius:20px; }
+
+.table { margin:0; }
+.table thead th { background:#f8fafc; font-size:.67rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:#94a3b8; border-bottom:1px solid #e2e8f0; padding:.8rem 1.1rem; white-space:nowrap; }
+.table tbody td { padding:.85rem 1.1rem; vertical-align:middle; border-bottom:1px solid #f1f5f9; font-size:.875rem; color:#475569; transition: background .12s; }
+.table tbody tr:last-child td { border-bottom:none; }
+.table tbody tr { cursor:pointer; }
+.table tbody tr:hover td { background:#f8fafc; color:#0f172a; }
+
+.av { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#4f46e5,#3b82f6); color:#fff; font-size:.78rem; font-weight:800; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }
+
+.btn-p { background:linear-gradient(135deg,#4f46e5,#3b82f6); border:none; color:#fff; font-weight:700; border-radius:10px; padding:.5rem 1.1rem; font-size:.82rem; display:inline-flex; align-items:center; gap:.4rem; text-decoration:none; box-shadow:0 3px 10px rgba(79,70,229,.3); transition:all .2s; }
+.btn-p:hover { transform:translateY(-2px); color:#fff; }
+.btn-o { border:1.5px solid #e2e8f0; color:#475569; background:#fff; font-weight:600; border-radius:8px; padding:.3rem .8rem; font-size:.75rem; display:inline-flex; align-items:center; gap:.35rem; text-decoration:none; transition:all .15s; }
+.btn-o:hover { border-color:#4f46e5; color:#4f46e5; background:#e0e7ff; }
+
+.tag-doc { background:#f1f5f9; color:#475569; font-size:.7rem; font-weight:700; padding:.2rem .55rem; border-radius:6px; font-family:monospace; }
+
+mark.search-hl {
+    background: #fef08a; color: #92400e;
+    padding: 0 2px; border-radius: 3px; font-weight: 800;
+}
+
+.es { text-align:center; padding:3.5rem 2rem; }
+.es-icon { width:72px; height:72px; border-radius:18px; background:#e0e7ff; color:#4f46e5; display:flex; align-items:center; justify-content:center; font-size:1.8rem; margin:0 auto 1rem; }
+.es h6 { font-weight:700; color:#0f172a; margin-bottom:.3rem; font-size: .95rem; }
+.es p { color:#94a3b8; font-size:.82rem; margin: 0 0 1rem; }
+.es-actions { display: flex; gap: .5rem; justify-content: center; flex-wrap: wrap; margin-top: .85rem; }
+.es-btn-clear {
+    border: 1.5px solid #e2e8f0; background: #fff; color: #475569;
+    padding: .5rem 1.1rem; border-radius: 10px; font-weight: 600; font-size: .82rem;
+    display: inline-flex; align-items: center; gap: .4rem;
+    text-decoration: none; transition: all .2s;
+}
+.es-btn-clear:hover { border-color:#ef4444; color:#ef4444; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ph">
+    <h2><i class="fas fa-users"></i> Clientes</h2>
+    <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+        <a href="{% url 'cliente_importar' %}" style="border:1.5px solid #f59e0b;color:#f59e0b;background:#fff;font-weight:700;border-radius:10px;padding:.5rem 1.1rem;font-size:.82rem;display:inline-flex;align-items:center;gap:.4rem;text-decoration:none;transition:all .2s;">
+            <i class="fas fa-file-upload"></i> Importar
+        </a>
+        <a href="{% url 'cliente_exportar' %}" style="border:1.5px solid #10b981;color:#10b981;background:#fff;font-weight:700;border-radius:10px;padding:.5rem 1.1rem;font-size:.82rem;display:inline-flex;align-items:center;gap:.4rem;text-decoration:none;transition:all .2s;">
+            <i class="fas fa-file-csv"></i> Exportar
+        </a>
+        <a href="{% url 'cliente_crear' %}" class="btn-p">
+            <i class="fas fa-plus"></i> Nuevo Cliente
+        </a>
+    </div>
+</div>
+
+<div class="fc">
+    <form method="get" id="filterForm">
+        <div class="fc-row">
+            <div class="search-wrap {% if q %}has-text{% endif %}">
+                <i class="fas fa-search si"></i>
+                <input type="text" name="q" id="searchInput" value="{{ q }}"
+                       placeholder="Buscar por nombre, apellido, DNI o email..."
+                       autocomplete="off">
+                <button type="button" class="clear-btn" id="clearSearch" title="Limpiar búsqueda">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            {% if q %}
+            <div class="filter-info">
+                <i class="fas fa-filter"></i>
+                Filtrando por: <strong>"{{ q }}"</strong>
+                <a href="{% url 'cliente_lista' %}" class="clear-link">Limpiar</a>
+            </div>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<div class="tc">
+    <div class="tc-head">
+        <span class="tc-title">
+            <i class="fas fa-list"></i>
+            {% if q %}Resultados de búsqueda{% else %}Listado de clientes{% endif %}
+        </span>
+        <span class="tc-count">
+            {% if q %}{{ clientes.paginator.count }} de {{ total }}{% else %}{{ clientes.paginator.count }}{% endif %}
+            {{ clientes.paginator.count|pluralize:"resultado,resultados" }}
+        </span>
+    </div>
+    <div class="table-responsive">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-4">Cliente</th>
+                    <th>Documento</th>
+                    <th>Teléfono</th>
+                    <th>Email</th>
+                    <th class="text-end pe-4">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in clientes %}
+                <tr onclick="location.href='{% url 'cliente_detalle' c.pk %}'">
+                    <td class="ps-4">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="av">{{ c.nombres|first|upper }}</span>
+                            <div>
+                                <div class="fw-semibold" style="color:#0f172a;">{{ c.nombre_completo }}</div>
+                                <div style="font-size:.7rem;color:#94a3b8;">Cliente desde {{ c.fecha_registro|date:'M Y' }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="tag-doc">{{ c.tipo_doc }} {{ c.nro_doc }}</span></td>
+                    <td>{% if c.telefono %}<i class="fas fa-phone" style="color:#10b981;font-size:.7rem;"></i> {{ c.telefono }}{% else %}<span style="color:#cbd5e1;">—</span>{% endif %}</td>
+                    <td style="font-size:.78rem;">{% if c.email %}{{ c.email|truncatechars:28 }}{% else %}<span style="color:#cbd5e1;">—</span>{% endif %}</td>
+                    <td class="text-end pe-4">
+                        <a href="{% url 'cliente_detalle' c.pk %}" class="btn-o" onclick="event.stopPropagation()">
+                            <i class="fas fa-eye"></i> Ver
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="p-0 border-0">
+                        <div class="es">
+                            <div class="es-icon">
+                                {% if q %}<i class="fas fa-search"></i>{% else %}<i class="fas fa-users"></i>{% endif %}
+                            </div>
+                            {% if q %}
+                                <h6>No encontramos clientes con "{{ q }}"</h6>
+                                <p>Intenta buscar con otro nombre, apellido, DNI o email.</p>
+                                <div class="es-actions">
+                                    <a href="{% url 'cliente_lista' %}" class="es-btn-clear">
+                                        <i class="fas fa-times"></i> Limpiar búsqueda
+                                    </a>
+                                    <a href="{% url 'cliente_crear' %}" class="btn-p">
+                                        <i class="fas fa-plus"></i> Crear cliente nuevo
+                                    </a>
+                                </div>
+                            {% else %}
+                                <h6>No hay clientes registrados</h6>
+                                <p>Crea tu primer cliente con búsqueda automática por DNI</p>
+                                <div class="es-actions">
+                                    <a href="{% url 'cliente_crear' %}" class="btn-p">
+                                        <i class="fas fa-plus"></i> Nuevo cliente
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const searchInput = document.getElementById('searchInput');
+const clearBtn = document.getElementById('clearSearch');
+const searchWrap = searchInput.closest('.search-wrap');
+let timer;
+
+// 🎯 Al cargar la página, si hay búsqueda activa, devolver el foco al input
+// y poner el cursor al final del texto (esto soluciona el "salto" al escribir)
+window.addEventListener('DOMContentLoaded', () => {
+    if (searchInput.value && searchInput.value.length > 0) {
+        searchInput.focus();
+        const len = searchInput.value.length;
+        searchInput.setSelectionRange(len, len);
+    }
+});
+
+searchInput.addEventListener('input', function() {
+    if (this.value.length > 0) searchWrap.classList.add('has-text');
+    else searchWrap.classList.remove('has-text');
+
+    clearTimeout(timer);
+    // Espera 500ms desde que dejas de escribir antes de buscar
+    // (evita recargas en cada tecla)
+    timer = setTimeout(() => document.getElementById('filterForm').submit(), 500);
+});
+
+// Si presionas Enter, busca inmediatamente
+searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        clearTimeout(timer);
+        document.getElementById('filterForm').submit();
+    }
+});
+
+clearBtn.addEventListener('click', function() {
+    searchInput.value = '';
+    window.location.href = "{% url 'cliente_lista' %}";
+});
+</script>
+{% endblock %}

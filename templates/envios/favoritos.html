@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}Mis Favoritos{% endblock %}
+
+{% block extra_css %}
+<style>
+.fav-page { max-width: 1100px; margin: 0 auto; }
+.fav-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem; }
+.fav-title { display:flex; align-items:center; gap:.85rem; }
+.fav-icon {
+    width: 48px; height: 48px; border-radius: 13px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; color: #fff;
+    box-shadow: 0 5px 16px rgba(245,158,11,.35);
+}
+.fav-title h2 { font-size: 1.25rem; font-weight: 800; margin: 0; }
+.fav-title p { font-size: .8rem; color: #94a3b8; margin: .15rem 0 0; }
+
+.fav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+
+.fav-card {
+    background: #fff; border-radius: 14px; padding: 1.1rem 1.25rem;
+    border: 1.5px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    transition: all .25s; cursor: pointer; position: relative; overflow: hidden;
+}
+.fav-card::before {
+    content: ''; position: absolute; top: 0; right: 0;
+    width: 80px; height: 80px;
+    background: radial-gradient(circle, rgba(251,191,36,.15), transparent 70%);
+}
+.fav-card:hover { transform: translateY(-3px); border-color: #fbbf24; box-shadow: 0 8px 22px rgba(251,191,36,.15); }
+
+.fav-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .85rem; }
+.fav-codigo { font-family: monospace; font-weight: 800; color: #4f46e5; font-size: .8rem; }
+.fav-star { color: #f59e0b; font-size: .95rem; }
+
+.fav-people { display: flex; align-items: center; gap: .55rem; margin-bottom: .65rem; font-size: .82rem; }
+.fav-people i { color: #94a3b8; font-size: .7rem; }
+.fav-people strong { color: #0f172a; font-weight: 700; }
+
+.fav-route {
+    background: #f8fafc; border-radius: 8px;
+    padding: .5rem .8rem; font-size: .78rem; font-weight: 600;
+    color: #475569; display: flex; align-items: center; gap: .4rem;
+    margin-bottom: .85rem;
+}
+.fav-route i { color: #94a3b8; font-size: .65rem; }
+
+.fav-footer { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.pill {
+    display: inline-flex; padding: .2rem .55rem; border-radius: 12px;
+    font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+}
+.pill-PE { background: #f1f5f9; color: #475569; }
+.pill-TR { background: #dbeafe; color: #1d4ed8; }
+.pill-DE { background: #fef3c7; color: #b45309; }
+.pill-EN { background: #d1fae5; color: #047857; }
+.pill-DV { background: #fee2e2; color: #b91c1c; }
+.fav-cost { font-size: .85rem; font-weight: 800; color: #059669; }
+
+.fav-empty {
+    text-align: center; padding: 4rem 2rem;
+    background: #fff; border-radius: 16px; border: 2px dashed #e2e8f0;
+}
+.fav-empty-icon {
+    width: 80px; height: 80px; border-radius: 22px;
+    background: #fef3c7; color: #f59e0b;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; margin: 0 auto 1rem;
+}
+.fav-empty h5 { font-weight: 800; color: #0f172a; margin-bottom: .35rem; }
+.fav-empty p { color: #64748b; font-size: .85rem; margin: 0 0 1rem; }
+.btn-p { background: linear-gradient(135deg,#4f46e5,#3b82f6); color: #fff; border:none; padding:.6rem 1.2rem; border-radius:10px; font-weight:700; font-size:.85rem; text-decoration:none; display:inline-flex; align-items:center; gap:.4rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fav-page">
+    <div class="fav-head">
+        <div class="fav-title">
+            <div class="fav-icon"><i class="fas fa-star"></i></div>
+            <div>
+                <h2>Mis Favoritos</h2>
+                <p>Encomiendas que marcaste como importantes — {{ favoritos|length }} en total</p>
+            </div>
+        </div>
+    </div>
+
+    {% if favoritos %}
+    <div class="fav-grid">
+        {% for fav in favoritos %}
+        <div class="fav-card" onclick="location.href='{% url 'encomienda_detalle' fav.encomienda.pk %}'">
+            <div class="fav-card-head">
+                <span class="fav-codigo">{{ fav.encomienda.codigo }}</span>
+                <i class="fas fa-star fav-star"></i>
+            </div>
+            <div class="fav-people"><i class="fas fa-paper-plane"></i> <strong>{{ fav.encomienda.remitente.nombre_completo|truncatechars:30 }}</strong></div>
+            <div class="fav-people"><i class="fas fa-inbox"></i> {{ fav.encomienda.destinatario.nombre_completo|truncatechars:30 }}</div>
+            <div class="fav-route">
+                <i class="fas fa-route"></i> {{ fav.encomienda.ruta.origen }} → {{ fav.encomienda.ruta.destino }}
+            </div>
+            <div class="fav-footer">
+                <span class="pill pill-{{ fav.encomienda.estado }}">{{ fav.encomienda.get_estado_display }}</span>
+                <span class="fav-cost">S/ {{ fav.encomienda.costo_envio }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="fav-empty">
+        <div class="fav-empty-icon"><i class="far fa-star"></i></div>
+        <h5>Aún no tienes favoritos</h5>
+        <p>Marca encomiendas importantes con la estrella ⭐ en su detalle</p>
+        <a href="{% url 'encomienda_lista' %}" class="btn-p">
+            <i class="fas fa-boxes"></i> Ver todas las encomiendas
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

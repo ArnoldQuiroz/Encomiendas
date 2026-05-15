@@ -8,21 +8,328 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <!-- 📱 PWA -->
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Encomiendas">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234f46e5'/%3E%3Cstop offset='1' stop-color='%238b5cf6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='192' height='192' rx='42' fill='url(%23g)'/%3E%3Cpath d='M48 96 L96 64 L144 96 L144 144 L48 144 Z' fill='%23fff' opacity='.95'/%3E%3Crect x='84' y='112' width='24' height='32' fill='%234f46e5'/%3E%3C/svg%3E">
+    <!-- Aplicar tema antes de pintar para evitar flash blanco -->
+    <script>
+        (function() {
+            const saved = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', saved);
+        })();
+    </script>
+    <style>
+        /* ════════════════════════════════════════════════
+           🌙 DARK MODE — Variables CSS
+        ════════════════════════════════════════════════ */
+        [data-theme="dark"] {
+            color-scheme: dark;
+        }
+        [data-theme="dark"] body {
+            background: #0f172a !important;
+            color: #e2e8f0;
+        }
+        [data-theme="dark"] .container,
+        [data-theme="dark"] main { color: #e2e8f0; }
+
+        /* Cards, papers, secciones — fondo oscuro */
+        [data-theme="dark"] .card-d,
+        [data-theme="dark"] .sc,
+        [data-theme="dark"] .sec,
+        [data-theme="dark"] .tc,
+        [data-theme="dark"] .fc,
+        [data-theme="dark"] .fs,
+        [data-theme="dark"] .chart-card,
+        [data-theme="dark"] .unified-card,
+        [data-theme="dark"] .stat-card,
+        [data-theme="dark"] .form-footer,
+        [data-theme="dark"] .tips-card,
+        [data-theme="dark"] .ph,
+        [data-theme="dark"] footer.bg-dark { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0; }
+
+        [data-theme="dark"] .tc-head,
+        [data-theme="dark"] .sec-head,
+        [data-theme="dark"] .card-d-head { background: #1e293b !important; border-bottom-color: #334155 !important; }
+
+        /* Textos */
+        [data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3,
+        [data-theme="dark"] h4, [data-theme="dark"] h5, [data-theme="dark"] h6 { color: #f1f5f9 !important; }
+        [data-theme="dark"] .text-muted { color: #94a3b8 !important; }
+        [data-theme="dark"] strong { color: #f1f5f9; }
+
+        /* Tabla */
+        [data-theme="dark"] .table { color: #cbd5e1; }
+        [data-theme="dark"] .table thead th { background: #0f172a !important; color: #94a3b8 !important; border-bottom-color: #334155 !important; }
+        [data-theme="dark"] .table tbody td { border-bottom-color: #334155 !important; color: #cbd5e1 !important; }
+        [data-theme="dark"] .table tbody tr:hover td { background: #334155 !important; color: #f1f5f9 !important; }
+
+        /* Inputs */
+        [data-theme="dark"] .form-control,
+        [data-theme="dark"] .form-select,
+        [data-theme="dark"] input[type="text"],
+        [data-theme="dark"] input[type="email"],
+        [data-theme="dark"] input[type="password"],
+        [data-theme="dark"] input[type="number"],
+        [data-theme="dark"] input[type="date"],
+        [data-theme="dark"] textarea,
+        [data-theme="dark"] select {
+            background: #0f172a !important;
+            border-color: #475569 !important;
+            color: #e2e8f0 !important;
+        }
+        [data-theme="dark"] .form-control:focus,
+        [data-theme="dark"] .form-select:focus {
+            background: #1e293b !important;
+            border-color: #818cf8 !important;
+            box-shadow: 0 0 0 3px rgba(129,140,248,.15) !important;
+        }
+        [data-theme="dark"] ::placeholder { color: #64748b !important; }
+
+        /* Cells y backgrounds claros → oscuros */
+        [data-theme="dark"] .info-cell,
+        [data-theme="dark"] .info-row .info-ico,
+        [data-theme="dark"] .info-row,
+        [data-theme="dark"] .person-card,
+        [data-theme="dark"] .person-box,
+        [data-theme="dark"] .stat-box,
+        [data-theme="dark"] .date-row,
+        [data-theme="dark"] .tl-content,
+        [data-theme="dark"] [style*="background:#f8fafc"],
+        [data-theme="dark"] [style*="background: #f8fafc"],
+        [data-theme="dark"] [style*="background:#fafbff"] { background: #0f172a !important; border-color: #334155 !important; color: #cbd5e1; }
+
+        [data-theme="dark"] [style*="color:#0f172a"] { color: #f1f5f9 !important; }
+        [data-theme="dark"] [style*="color:#475569"] { color: #cbd5e1 !important; }
+        [data-theme="dark"] [style*="color:#64748b"] { color: #94a3b8 !important; }
+        [data-theme="dark"] [style*="color: #0f172a"] { color: #f1f5f9 !important; }
+        [data-theme="dark"] [style*="color: #475569"] { color: #cbd5e1 !important; }
+        [data-theme="dark"] [style*="color: #64748b"] { color: #94a3b8 !important; }
+
+        /* 🔢 Números de stat cards - SIEMPRE blancos en dark */
+        [data-theme="dark"] .sc-num,
+        [data-theme="dark"] .stat-num,
+        [data-theme="dark"] .stat-box-val,
+        [data-theme="dark"] .kpi-val,
+        [data-theme="dark"] .metric-num,
+        [data-theme="dark"] .stat-block-num,
+        [data-theme="dark"] .stat-mini-num,
+        [data-theme="dark"] .det-code,
+        [data-theme="dark"] .info-cell-val,
+        [data-theme="dark"] .ic-val,
+        [data-theme="dark"] .pb-name,
+        [data-theme="dark"] .person-name,
+        [data-theme="dark"] .date-val,
+        [data-theme="dark"] .info-val,
+        [data-theme="dark"] .tl-titulo,
+        [data-theme="dark"] .tar-titulo,
+        [data-theme="dark"] .hm-city-name,
+        [data-theme="dark"] .fav-codigo,
+        [data-theme="dark"] .ts-val,
+        [data-theme="dark"] .nv-avatar-name { color: #f1f5f9 !important; }
+
+        /* 💚 Verde sigue visible (ingresos, etc.) */
+        [data-theme="dark"] [style*="color:#059669"],
+        [data-theme="dark"] [style*="color: #059669"] { color: #34d399 !important; }
+        [data-theme="dark"] [style*="color:#047857"],
+        [data-theme="dark"] [style*="color: #047857"] { color: #6ee7b7 !important; }
+
+        /* 🔴 Rojos */
+        [data-theme="dark"] [style*="color:#b91c1c"],
+        [data-theme="dark"] [style*="color: #b91c1c"] { color: #fca5a5 !important; }
+
+        /* 🟦 Azules */
+        [data-theme="dark"] [style*="color:#1d4ed8"],
+        [data-theme="dark"] [style*="color: #1d4ed8"] { color: #93c5fd !important; }
+        [data-theme="dark"] [style*="color:#4f46e5"],
+        [data-theme="dark"] [style*="color: #4f46e5"] { color: #a5b4fc !important; }
+
+        /* Labels de stats */
+        [data-theme="dark"] .sc-lbl,
+        [data-theme="dark"] .stat-lbl,
+        [data-theme="dark"] .stat-box-lbl,
+        [data-theme="dark"] .kpi-lbl,
+        [data-theme="dark"] .info-cell-lbl,
+        [data-theme="dark"] .ic-lbl,
+        [data-theme="dark"] .pb-lbl,
+        [data-theme="dark"] .person-lbl,
+        [data-theme="dark"] .date-lbl,
+        [data-theme="dark"] .info-lbl,
+        [data-theme="dark"] .metric-lbl,
+        [data-theme="dark"] .stat-block-lbl,
+        [data-theme="dark"] .stat-mini-lbl,
+        [data-theme="dark"] .chart-title,
+        [data-theme="dark"] .chart-sub,
+        [data-theme="dark"] .section-title,
+        [data-theme="dark"] .card-d-title,
+        [data-theme="dark"] .tc-title,
+        [data-theme="dark"] .sec-title { color: #cbd5e1 !important; }
+        [data-theme="dark"] .chart-title i,
+        [data-theme="dark"] .card-d-title i,
+        [data-theme="dark"] .sec-title i { color: #a5b4fc !important; }
+
+        /* Strong/bold en cards oscuros */
+        [data-theme="dark"] .card-d strong,
+        [data-theme="dark"] .sc strong,
+        [data-theme="dark"] .chart-card strong { color: #f1f5f9 !important; }
+
+        /* Badges en dark */
+        [data-theme="dark"] .pill-PE { background: #334155; color: #cbd5e1; }
+        [data-theme="dark"] .bs-PE { background: #334155; color: #cbd5e1; }
+        [data-theme="dark"] .tag-doc { background: #334155; color: #cbd5e1; }
+
+        /* Toast en dark */
+        [data-theme="dark"] .msg { background: #1e293b; color: #f1f5f9; }
+
+        /* Botones outline */
+        [data-theme="dark"] .btn-back,
+        [data-theme="dark"] .btn-o,
+        [data-theme="dark"] .btn-cancel {
+            background: #1e293b !important; border-color: #475569 !important; color: #cbd5e1 !important;
+        }
+
+        /* Theme toggle button */
+        .theme-toggle {
+            background: rgba(255,255,255,.18); border: 1.5px solid rgba(255,255,255,.25);
+            color: #fff; width: 38px; height: 38px;
+            border-radius: 10px; cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: .95rem; transition: all .2s;
+            padding: 0;
+        }
+        .theme-toggle:hover { background: rgba(255,255,255,.28); transform: rotate(15deg); }
+
+        /* ── Toast-style messages (compact, bottom-right) ── */
+        /* ── Toast-style messages (compact, bottom-right) ── */
+        .msg-stack {
+            position: fixed; bottom: 20px; right: 20px;
+            z-index: 1080; display: flex; flex-direction: column-reverse;
+            gap: .45rem; max-width: 320px;
+            pointer-events: none;
+        }
+        .msg-stack > * { pointer-events: auto; }
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to   { transform: translateY(0); opacity: 1; }
+        }
+        .msg {
+            display: flex; align-items: center; gap: .55rem;
+            background: #fff; border-radius: 10px;
+            padding: .55rem .85rem .55rem .65rem;
+            box-shadow: 0 6px 22px rgba(0,0,0,.12);
+            border-left: 3px solid #94a3b8;
+            font-size: .78rem; color: #0f172a; font-weight: 500;
+            animation: slideIn .25s ease-out;
+        }
+        .msg-icon {
+            width: 22px; height: 22px; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; font-size: .65rem; color: #fff;
+        }
+        .msg-body { flex: 1; line-height: 1.3; }
+        .msg-close {
+            background: none; border: none; color: #cbd5e1;
+            cursor: pointer; font-size: .7rem; padding: 0 .15rem;
+            transition: color .2s; opacity: .6;
+        }
+        .msg-close:hover { color: #ef4444; opacity: 1; }
+
+        .msg.success     { border-left-color: #10b981; }
+        .msg.success .msg-icon { background: #10b981; }
+        .msg.error,
+        .msg.danger      { border-left-color: #ef4444; }
+        .msg.error .msg-icon, .msg.danger .msg-icon { background: #ef4444; }
+        .msg.warning     { border-left-color: #f59e0b; }
+        .msg.warning .msg-icon { background: #f59e0b; }
+        .msg.info        { border-left-color: #3b82f6; }
+        .msg.info .msg-icon { background: #3b82f6; }
+        .msg.debug       { border-left-color: #94a3b8; }
+        .msg.debug .msg-icon { background: #94a3b8; }
+
+        @media (max-width: 600px) {
+            .msg-stack { left: 12px; right: 12px; max-width: none; bottom: 12px; }
+        }
+    </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
     {% include 'navbar.html' %}
-    <main class="container py-4">
-        {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+
+    {% if messages %}
+    <div class="msg-stack" id="msgStack">
+        {% for message in messages %}
+        <div class="msg {{ message.tags }}">
+            <div class="msg-icon">
+                {% if 'success' in message.tags %}<i class="fas fa-check"></i>
+                {% elif 'error' in message.tags or 'danger' in message.tags %}<i class="fas fa-exclamation"></i>
+                {% elif 'warning' in message.tags %}<i class="fas fa-exclamation-triangle"></i>
+                {% else %}<i class="fas fa-info"></i>
+                {% endif %}
             </div>
-            {% endfor %}
+            <div class="msg-body">{{ message }}</div>
+            <button type="button" class="msg-close" onclick="this.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-        {% endif %}
+        {% endfor %}
+    </div>
+    <script>
+        // Auto-dismiss tras 2.5 segundos (escalonado para que no se vayan todos juntos)
+        document.querySelectorAll('#msgStack .msg').forEach((el, i) => {
+            setTimeout(() => {
+                el.style.transition = 'opacity .3s, transform .3s';
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                setTimeout(() => el.remove(), 300);
+            }, 2500 + (i * 200));
+        });
+    </script>
+    {% endif %}
+
+    <!-- 🔍 GLOBAL SEARCH MODAL (Cmd+K) -->
+    {% if user.is_authenticated %}
+    <div id="globalSearch" style="display:none;position:fixed;inset:0;z-index:1090;background:rgba(15,23,42,.7);backdrop-filter:blur(8px);align-items:flex-start;justify-content:center;padding-top:10vh;">
+        <div style="background:#fff;border-radius:16px;width:90%;max-width:600px;box-shadow:0 20px 60px rgba(0,0,0,.4);overflow:hidden;animation:slideDown .25s ease-out;">
+            <div style="position:relative;border-bottom:1px solid #f1f5f9;">
+                <i class="fas fa-search" style="position:absolute;left:1.25rem;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:1rem;"></i>
+                <input type="text" id="gsInput" placeholder="Buscar clientes, encomiendas, rutas..."
+                       style="width:100%;border:none;padding:1.1rem 6rem 1.1rem 3rem;font-size:1rem;outline:none;background:transparent;color:#0f172a;font-weight:500;"
+                       autocomplete="off">
+                <button type="button" id="voiceBtn" onclick="iniciarVoz()" title="Buscar por voz"
+                        style="position:absolute;right:3.4rem;top:50%;transform:translateY(-50%);background:#e0e7ff;color:#4f46e5;border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:all .2s;">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <kbd style="position:absolute;right:1.1rem;top:50%;transform:translateY(-50%);background:#f1f5f9;color:#64748b;font-size:.7rem;padding:.2rem .5rem;border-radius:5px;font-family:inherit;">ESC</kbd>
+            </div>
+            <div id="gsResults" style="max-height:60vh;overflow-y:auto;padding:.5rem 0;">
+                <div style="padding:2rem;text-align:center;color:#94a3b8;font-size:.85rem;">
+                    <i class="fas fa-keyboard" style="font-size:1.8rem;color:#cbd5e1;margin-bottom:.6rem;"></i>
+                    <div>Escribe al menos 2 caracteres para buscar</div>
+                </div>
+            </div>
+            <div style="background:#f8fafc;padding:.6rem 1.25rem;border-top:1px solid #f1f5f9;display:flex;gap:1rem;font-size:.7rem;color:#64748b;">
+                <span><kbd style="background:#e2e8f0;padding:.1rem .35rem;border-radius:3px;">↑ ↓</kbd> Navegar</span>
+                <span><kbd style="background:#e2e8f0;padding:.1rem .35rem;border-radius:3px;">↵</kbd> Abrir</span>
+                <span><kbd style="background:#e2e8f0;padding:.1rem .35rem;border-radius:3px;">Cmd K</kbd> Abrir buscador</span>
+            </div>
+        </div>
+    </div>
+    <style>
+        @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .gs-item { display: flex; align-items: center; gap: .75rem; padding: .65rem 1.25rem; cursor: pointer; transition: background .12s; text-decoration: none; color: #0f172a; }
+        .gs-item:hover, .gs-item.gs-active { background: #e0e7ff; color: #0f172a; }
+        .gs-ico { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; font-size: .8rem; }
+        .gs-main { flex: 1; min-width: 0; }
+        .gs-title { font-size: .85rem; font-weight: 700; line-height: 1.2; }
+        .gs-sub { font-size: .73rem; color: #64748b; margin-top: .15rem; }
+        .gs-section { font-size: .65rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .07em; padding: .65rem 1.25rem .25rem; }
+    </style>
+    {% endif %}
+
+    <main class="container py-4">
         {% block content %}{% endblock %}
     </main>
     <footer class="bg-dark text-white py-3 mt-5">
@@ -32,6 +339,283 @@
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'js/main.js' %}"></script>
+    <script>
+        // 🌙 Toggle dark/light theme + actualiza el icono
+        function applyThemeIcon() {
+            const icon = document.getElementById('themeIcon');
+            if (!icon) return;
+            const theme = document.documentElement.getAttribute('data-theme');
+            icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = current === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            applyThemeIcon();
+        }
+        applyThemeIcon();
+
+        // 🔔 Notificaciones del navegador
+        function pedirPermisoNotifs() {
+            if (!('Notification' in window)) {
+                alert('Tu navegador no soporta notificaciones.');
+                return;
+            }
+            if (Notification.permission === 'granted') {
+                showNotif('✓ Notificaciones activas', 'Ya estás recibiendo alertas del sistema.');
+                return;
+            }
+            Notification.requestPermission().then(perm => {
+                if (perm === 'granted') {
+                    localStorage.setItem('notifs_enabled', '1');
+                    showNotif('🎉 Notificaciones activadas', 'Te avisaremos de nuevas encomiendas y cambios.');
+                    document.getElementById('notifPermBtn')?.style.setProperty('display', 'none');
+                }
+            });
+        }
+        function showNotif(title, body, url) {
+            if (Notification.permission !== 'granted') return;
+            const n = new Notification(title, {
+                body: body,
+                icon: 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22%3E%3Cdefs%3E%3ClinearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%234f46e5%22/%3E%3Cstop offset=%221%22 stop-color=%22%238b5cf6%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%22192%22 height=%22192%22 rx=%2242%22 fill=%22url(%23g)%22/%3E%3Cpath d=%22M48 96 L96 64 L144 96 L144 144 L48 144 Z%22 fill=%22%23fff%22/%3E%3C/svg%3E',
+                badge: 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22%3E%3Crect width=%22192%22 height=%22192%22 rx=%2242%22 fill=%22%234f46e5%22/%3E%3C/svg%3E',
+                tag: 'encomiendas',
+            });
+            if (url) n.onclick = () => { window.focus(); location.href = url; n.close(); };
+            setTimeout(() => n.close(), 5000);
+        }
+
+        // 🔔 Poll cada 60s para detectar nuevas encomiendas
+        let _ultimoTotalActivas = parseInt('{{ nav_activas|default:0 }}', 10) || 0;
+        async function chequearNuevas() {
+            if (Notification.permission !== 'granted') return;
+            try {
+                const r = await fetch('/api/v1/dashboard/stats/', { credentials: 'same-origin' });
+                if (!r.ok) return;
+                const d = await r.json();
+                const ahora = d.total_activas || 0;
+                if (ahora > _ultimoTotalActivas) {
+                    const diff = ahora - _ultimoTotalActivas;
+                    showNotif(`📦 ${diff} nueva${diff > 1 ? 's' : ''} encomienda${diff > 1 ? 's' : ''}`,
+                              `Total activas: ${ahora}`,
+                              '/encomiendas/');
+                }
+                _ultimoTotalActivas = ahora;
+            } catch (e) {}
+        }
+        if ('{{ user.is_authenticated|yesno:"1,0" }}' === '1') {
+            setInterval(chequearNuevas, 60000);
+        }
+
+        // 📱 PWA — Registrar Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('{% static "sw.js" %}')
+                    .then(reg => console.log('✓ PWA listo'))
+                    .catch(err => console.warn('PWA error:', err));
+            });
+        }
+
+        // 📱 Prompt de instalación
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const btn = document.getElementById('installBtn');
+            if (btn) btn.style.display = 'inline-flex';
+        });
+        function installPWA() {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(() => {
+                deferredPrompt = null;
+                const btn = document.getElementById('installBtn');
+                if (btn) btn.style.display = 'none';
+            });
+        }
+
+        // 🔍 GLOBAL SEARCH (Cmd+K / Ctrl+K)
+        const gsModal = document.getElementById('globalSearch');
+        const gsInput = document.getElementById('gsInput');
+        const gsResults = document.getElementById('gsResults');
+        let gsTimer, gsActiveIdx = -1, gsItems = [];
+
+        function openGS() {
+            if (!gsModal) return;
+            gsModal.style.display = 'flex';
+            setTimeout(() => gsInput.focus(), 50);
+        }
+        function closeGS() {
+            if (!gsModal) return;
+            gsModal.style.display = 'none';
+            gsInput.value = '';
+        }
+        function updateGSActive() {
+            gsItems = gsResults.querySelectorAll('.gs-item');
+            gsItems.forEach((el, i) => el.classList.toggle('gs-active', i === gsActiveIdx));
+            if (gsActiveIdx >= 0 && gsItems[gsActiveIdx]) gsItems[gsActiveIdx].scrollIntoView({ block: 'nearest' });
+        }
+
+        gsInput?.addEventListener('input', () => {
+            clearTimeout(gsTimer);
+            const q = gsInput.value.trim();
+            if (q.length < 2) {
+                gsResults.innerHTML = `<div style="padding:2rem;text-align:center;color:#94a3b8;font-size:.85rem;"><i class="fas fa-keyboard" style="font-size:1.8rem;color:#cbd5e1;margin-bottom:.6rem;"></i><div>Escribe al menos 2 caracteres para buscar</div></div>`;
+                return;
+            }
+            gsTimer = setTimeout(async () => {
+                try {
+                    const r = await fetch(`/api/v1/buscar/?q=${encodeURIComponent(q)}`, { credentials: 'same-origin' });
+                    const d = await r.json();
+                    let html = '';
+                    if (d.encomiendas?.length) {
+                        html += '<div class="gs-section">Encomiendas</div>';
+                        d.encomiendas.forEach(e => {
+                            html += `<a href="/encomiendas/${e.id}/" class="gs-item">
+                                <div class="gs-ico" style="background:linear-gradient(135deg,#4f46e5,#6d28d9);"><i class="fas fa-box"></i></div>
+                                <div class="gs-main">
+                                    <div class="gs-title" style="font-family:monospace;">${e.codigo}</div>
+                                    <div class="gs-sub">${e.remitente__nombres} ${e.remitente__apellidos} · ${e.ruta__origen} → ${e.ruta__destino}</div>
+                                </div>
+                            </a>`;
+                        });
+                    }
+                    if (d.clientes?.length) {
+                        html += '<div class="gs-section">Clientes</div>';
+                        d.clientes.forEach(c => {
+                            html += `<a href="/clientes/${c.id}/" class="gs-item">
+                                <div class="gs-ico" style="background:linear-gradient(135deg,#3b82f6,#2563eb);"><i class="fas fa-user"></i></div>
+                                <div class="gs-main">
+                                    <div class="gs-title">${c.nombres} ${c.apellidos}</div>
+                                    <div class="gs-sub">DNI ${c.nro_doc}</div>
+                                </div>
+                            </a>`;
+                        });
+                    }
+                    if (d.rutas?.length) {
+                        html += '<div class="gs-section">Rutas</div>';
+                        d.rutas.forEach(rt => {
+                            html += `<a href="#" class="gs-item">
+                                <div class="gs-ico" style="background:linear-gradient(135deg,#10b981,#059669);"><i class="fas fa-route"></i></div>
+                                <div class="gs-main">
+                                    <div class="gs-title">${rt.origen} → ${rt.destino}</div>
+                                    <div class="gs-sub" style="font-family:monospace;">${rt.codigo}</div>
+                                </div>
+                            </a>`;
+                        });
+                    }
+                    if (!html) html = `<div style="padding:2rem;text-align:center;color:#94a3b8;font-size:.85rem;"><i class="fas fa-search" style="font-size:1.8rem;color:#cbd5e1;margin-bottom:.6rem;"></i><div>No se encontraron resultados para "<strong>${q}</strong>"</div></div>`;
+                    gsResults.innerHTML = html;
+                    gsActiveIdx = -1;
+                    gsItems = gsResults.querySelectorAll('.gs-item');
+                } catch (err) {
+                    console.warn(err);
+                }
+            }, 200);
+        });
+
+        gsInput?.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown') { e.preventDefault(); gsActiveIdx = Math.min(gsActiveIdx + 1, gsItems.length - 1); updateGSActive(); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); gsActiveIdx = Math.max(gsActiveIdx - 1, 0); updateGSActive(); }
+            else if (e.key === 'Enter' && gsActiveIdx >= 0) { e.preventDefault(); gsItems[gsActiveIdx]?.click(); }
+            else if (e.key === 'Escape') { closeGS(); }
+        });
+
+        gsModal?.addEventListener('click', (e) => { if (e.target === gsModal) closeGS(); });
+
+        // 🎙️ BÚSQUEDA POR VOZ (Web Speech API)
+        function iniciarVoz() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert('Tu navegador no soporta búsqueda por voz. Usa Chrome o Edge.');
+                return;
+            }
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'es-PE';
+            recognition.interimResults = true;
+            recognition.continuous = false;
+            recognition.maxAlternatives = 1;
+
+            const btn = document.getElementById('voiceBtn');
+            if (!btn) return;
+
+            // UI: escuchando
+            btn.style.background = '#ef4444';
+            btn.style.color = '#fff';
+            btn.style.animation = 'voicePulse 1s infinite';
+            btn.innerHTML = '<i class="fas fa-microphone"></i>';
+            gsInput.placeholder = '🎙️ Escuchando...';
+
+            recognition.onresult = (e) => {
+                let transcript = '';
+                for (let i = 0; i < e.results.length; i++) {
+                    transcript += e.results[i][0].transcript;
+                }
+                gsInput.value = transcript;
+                if (e.results[0].isFinal) {
+                    gsInput.dispatchEvent(new Event('input'));
+                }
+            };
+
+            recognition.onend = () => {
+                btn.style.background = '#e0e7ff';
+                btn.style.color = '#4f46e5';
+                btn.style.animation = '';
+                gsInput.placeholder = 'Buscar clientes, encomiendas, rutas...';
+            };
+
+            recognition.onerror = (e) => {
+                console.warn('Voice error:', e.error);
+                recognition.stop();
+            };
+
+            recognition.start();
+        }
+
+        // Animación del botón
+        const voiceStyle = document.createElement('style');
+        voiceStyle.textContent = `@keyframes voicePulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,.5); }
+            50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+        }`;
+        document.head.appendChild(voiceStyle);
+
+        // ⌨️ Atajos de teclado globales
+        document.addEventListener('keydown', (e) => {
+            // Cmd+K / Ctrl+K abre buscador (siempre, incluso en inputs)
+            if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+                e.preventDefault();
+                openGS();
+                return;
+            }
+            // Escape cierra el buscador
+            if (e.key === 'Escape' && gsModal?.style.display === 'flex') {
+                closeGS();
+                return;
+            }
+            // Otros atajos: NO disparar si está escribiendo en un input
+            if (e.target.matches('input, textarea, select')) return;
+
+            if (e.key === 'n' || e.key === 'N') {
+                e.preventDefault();
+                window.location.href = '{% url "encomienda_crear" %}';
+            } else if (e.key === 'd' || e.key === 'D') {
+                e.preventDefault();
+                window.location.href = '{% url "dashboard" %}';
+            } else if (e.key === 'c' || e.key === 'C') {
+                e.preventDefault();
+                window.location.href = '{% url "cliente_lista" %}';
+            } else if (e.key === 'e' || e.key === 'E') {
+                e.preventDefault();
+                window.location.href = '{% url "encomienda_lista" %}';
+            } else if (e.key === '/') {
+                e.preventDefault();
+                const search = document.querySelector('#searchInput, [name="q"]');
+                if (search) search.focus();
+            }
+        });
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

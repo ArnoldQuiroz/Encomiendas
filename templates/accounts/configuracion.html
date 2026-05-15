@@ -1,0 +1,388 @@
+{% extends 'base.html' %}
+{% block title %}Configuración{% endblock %}
+
+{% block extra_css %}
+<style>
+.cfg-page { max-width: 920px; margin: 0 auto; }
+.cfg-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem; }
+.cfg-title { display:flex; align-items:center; gap:.85rem; }
+.cfg-icon {
+    width: 48px; height: 48px; border-radius: 13px;
+    background: linear-gradient(135deg, #64748b, #475569);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; color: #fff;
+    box-shadow: 0 5px 16px rgba(100,116,139,.35);
+}
+.cfg-title h2 { font-size: 1.25rem; font-weight: 800; margin: 0; }
+.cfg-title p { font-size: .8rem; color: #94a3b8; margin: .15rem 0 0; }
+
+.cfg-grid { display: grid; grid-template-columns: 240px 1fr; gap: 1.25rem; }
+
+.cfg-sidebar {
+    background: #fff; border-radius: 14px; padding: .75rem;
+    border: 1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,.04);
+    height: fit-content; position: sticky; top: 1rem;
+}
+.cfg-tab {
+    display: flex; align-items: center; gap: .65rem;
+    padding: .7rem .85rem; border-radius: 9px;
+    color: #475569; font-weight: 600; font-size: .85rem;
+    text-decoration: none; cursor: pointer;
+    transition: all .15s;
+}
+.cfg-tab:hover { background: #f1f5f9; color: #4f46e5; }
+.cfg-tab.active { background: linear-gradient(135deg, #4f46e5, #6366f1); color: #fff; }
+.cfg-tab i { width: 20px; text-align: center; }
+
+.cfg-card {
+    background: #fff; border-radius: 14px; padding: 1.5rem 1.75rem;
+    border: 1px solid #e2e8f0; box-shadow: 0 4px 18px rgba(0,0,0,.05);
+    margin-bottom: 1rem;
+}
+.cfg-card h3 {
+    font-size: 1rem; font-weight: 800; color: #0f172a; margin: 0 0 .25rem;
+    display: flex; align-items: center; gap: .55rem;
+}
+.cfg-card h3 i { color: #4f46e5; }
+.cfg-card .desc { font-size: .82rem; color: #64748b; margin: 0 0 1.25rem; }
+
+/* Avatar grande */
+.cfg-avatar-row { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 1.5rem; }
+.cfg-avatar {
+    width: 84px; height: 84px; border-radius: 50%;
+    background: linear-gradient(135deg, #4f46e5, #8b5cf6);
+    color: #fff; font-size: 2rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 24px rgba(79,70,229,.4);
+}
+.cfg-user-info h5 { font-size: 1rem; font-weight: 800; margin: 0; color: #0f172a; }
+.cfg-user-info p { font-size: .82rem; color: #64748b; margin: .2rem 0 0; }
+.cfg-rol-pill {
+    display: inline-flex; align-items: center; gap: .35rem;
+    background: #e0e7ff; color: #4f46e5; font-size: .68rem; font-weight: 700;
+    padding: .2rem .6rem; border-radius: 12px; margin-top: .35rem;
+}
+
+/* Form fields */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; margin-bottom: .85rem; }
+.form-row.single { grid-template-columns: 1fr; }
+label.lbl { display: block; font-size: .72rem; font-weight: 700; color: #64748b; margin-bottom: .35rem; text-transform: uppercase; letter-spacing: .05em; }
+.form-control-cfg {
+    width: 100%; border: 1.5px solid #e2e8f0; border-radius: 10px;
+    padding: .6rem .85rem; font-size: .88rem; color: #0f172a;
+    outline: none; transition: all .2s; font-family: inherit;
+}
+.form-control-cfg:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.1); }
+.form-control-cfg:disabled { background: #f8fafc; cursor: not-allowed; }
+
+.btn-save {
+    background: linear-gradient(135deg, #4f46e5, #3b82f6);
+    color: #fff; border: none; border-radius: 10px;
+    padding: .65rem 1.4rem; font-size: .85rem; font-weight: 700;
+    cursor: pointer; display: inline-flex; align-items: center; gap: .45rem;
+    box-shadow: 0 4px 14px rgba(79,70,229,.35);
+}
+.btn-save:hover { transform: translateY(-2px); }
+
+/* Stats card */
+.stats-mini { display: grid; grid-template-columns: repeat(2, 1fr); gap: .65rem; }
+.stat-mini-card {
+    background: #f8fafc; border-radius: 10px; padding: .85rem 1rem;
+    border: 1px solid #e2e8f0;
+}
+.stat-mini-lbl { font-size: .62rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
+.stat-mini-val { font-size: 1.05rem; font-weight: 800; color: #0f172a; margin-top: .2rem; }
+
+@media (max-width: 768px) {
+    .cfg-grid { grid-template-columns: 1fr; }
+    .cfg-sidebar { position: static; }
+    .form-row { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cfg-page">
+    <div class="cfg-head">
+        <div class="cfg-title">
+            <div class="cfg-icon"><i class="fas fa-cog"></i></div>
+            <div>
+                <h2>Configuración</h2>
+                <p>Administra tu cuenta y preferencias</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="cfg-grid">
+        <!-- Sidebar de tabs -->
+        <div class="cfg-sidebar">
+            <a class="cfg-tab active" onclick="showTab('cuenta', this)">
+                <i class="fas fa-user-circle"></i> Cuenta
+            </a>
+            <a class="cfg-tab" onclick="showTab('seguridad', this)">
+                <i class="fas fa-shield-alt"></i> Seguridad
+            </a>
+            <a class="cfg-tab" onclick="showTab('preferencias', this)">
+                <i class="fas fa-palette"></i> Preferencias
+            </a>
+            <a class="cfg-tab" onclick="showTab('atajos', this)">
+                <i class="fas fa-keyboard"></i> Atajos
+            </a>
+        </div>
+
+        <!-- Contenido -->
+        <div>
+            <!-- CUENTA -->
+            <div class="cfg-tab-content" id="tab-cuenta">
+                <div class="cfg-card">
+                    <h3><i class="fas fa-user-circle"></i> Tu perfil</h3>
+                    <p class="desc">Información personal y de contacto</p>
+
+                    <div class="cfg-avatar-row">
+                        <div class="cfg-avatar">{{ user.username|first|upper }}</div>
+                        <div class="cfg-user-info">
+                            <h5>{{ user.username }}</h5>
+                            <p>Cuenta desde {{ user.date_joined|date:'F Y' }}</p>
+                            {% if user_rol %}<span class="cfg-rol-pill"><i class="fas fa-shield-alt"></i> {{ user_rol }}</span>{% endif %}
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="datos">
+
+                        <div class="form-row single">
+                            <div>
+                                <label class="lbl">Usuario</label>
+                                <input class="form-control-cfg" value="{{ user.username }}" disabled>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div>
+                                <label class="lbl">Nombres</label>
+                                <input class="form-control-cfg" name="first_name" value="{{ user.first_name }}">
+                            </div>
+                            <div>
+                                <label class="lbl">Apellidos</label>
+                                <input class="form-control-cfg" name="last_name" value="{{ user.last_name }}">
+                            </div>
+                        </div>
+
+                        <div class="form-row single">
+                            <div>
+                                <label class="lbl">Correo electrónico</label>
+                                <input class="form-control-cfg" name="email" type="email" value="{{ user.email }}">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-save">
+                            <i class="fas fa-save"></i> Guardar cambios
+                        </button>
+                    </form>
+                </div>
+
+                <div class="cfg-card">
+                    <h3><i class="fas fa-chart-bar"></i> Tu actividad</h3>
+                    <p class="desc">Estadísticas de tu uso del sistema</p>
+                    <div class="stats-mini">
+                        <div class="stat-mini-card">
+                            <div class="stat-mini-lbl">Último acceso</div>
+                            <div class="stat-mini-val">{{ user.last_login|date:'d M Y H:i'|default:'—' }}</div>
+                        </div>
+                        <div class="stat-mini-card">
+                            <div class="stat-mini-lbl">Es superusuario</div>
+                            <div class="stat-mini-val">{% if user.is_superuser %}<span style="color:#10b981;">Sí ✓</span>{% else %}No{% endif %}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEGURIDAD -->
+            <div class="cfg-tab-content" id="tab-seguridad" style="display:none;">
+                <div class="cfg-card">
+                    <h3><i class="fas fa-key"></i> Cambiar contraseña</h3>
+                    <p class="desc">Mantén tu cuenta segura con una contraseña fuerte</p>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="password">
+
+                        <div class="form-row single">
+                            <div>
+                                <label class="lbl">Contraseña actual</label>
+                                <input class="form-control-cfg" name="old_password" type="password" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div>
+                                <label class="lbl">Nueva contraseña</label>
+                                <input class="form-control-cfg" name="new_password1" type="password" required>
+                            </div>
+                            <div>
+                                <label class="lbl">Repetir nueva contraseña</label>
+                                <input class="form-control-cfg" name="new_password2" type="password" required>
+                            </div>
+                        </div>
+
+                        <p style="font-size:.78rem;color:#64748b;line-height:1.55;margin:0 0 1rem;background:#f8fafc;padding:.65rem .85rem;border-radius:8px;border-left:3px solid #4f46e5;">
+                            <i class="fas fa-info-circle" style="color:#4f46e5;"></i>
+                            La contraseña debe tener al menos 8 caracteres y no ser muy común.
+                        </p>
+
+                        <button type="submit" class="btn-save">
+                            <i class="fas fa-lock"></i> Actualizar contraseña
+                        </button>
+                    </form>
+                </div>
+
+                <div class="cfg-card">
+                    <h3><i class="fas fa-shield-alt"></i> Seguridad de la cuenta</h3>
+                    <p class="desc">Estado de protección actual</p>
+
+                    <div style="display:flex;flex-direction:column;gap:.65rem;">
+                        <div style="display:flex;align-items:center;gap:.85rem;padding:.85rem 1rem;background:#f0fdf4;border:1px solid #86efac;border-radius:10px;">
+                            <i class="fas fa-check-circle" style="color:#10b981;font-size:1.1rem;"></i>
+                            <div style="flex:1;">
+                                <div style="font-size:.85rem;font-weight:700;color:#0f172a;">Protección contra fuerza bruta</div>
+                                <div style="font-size:.75rem;color:#64748b;">Tu cuenta se bloquea tras 5 intentos fallidos</div>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:.85rem;padding:.85rem 1rem;background:#f0fdf4;border:1px solid #86efac;border-radius:10px;">
+                            <i class="fas fa-check-circle" style="color:#10b981;font-size:1.1rem;"></i>
+                            <div style="flex:1;">
+                                <div style="font-size:.85rem;font-weight:700;color:#0f172a;">Sesión segura</div>
+                                <div style="font-size:.75rem;color:#64748b;">Auto-cierre tras 30 min de inactividad</div>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:.85rem;padding:.85rem 1rem;background:#f0fdf4;border:1px solid #86efac;border-radius:10px;">
+                            <i class="fas fa-check-circle" style="color:#10b981;font-size:1.1rem;"></i>
+                            <div style="flex:1;">
+                                <div style="font-size:.85rem;font-weight:700;color:#0f172a;">Auditoría de accesos</div>
+                                <div style="font-size:.75rem;color:#64748b;">Cada consulta a clientes queda registrada</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PREFERENCIAS -->
+            <div class="cfg-tab-content" id="tab-preferencias" style="display:none;">
+                <div class="cfg-card">
+                    <h3><i class="fas fa-palette"></i> Apariencia</h3>
+                    <p class="desc">Personaliza cómo se ve el sistema</p>
+
+                    <div style="display:flex;gap:1rem;">
+                        <button type="button" onclick="document.documentElement.setAttribute('data-theme','light');localStorage.setItem('theme','light');applyThemeIcon();" style="flex:1;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#fff;border:none;border-radius:12px;padding:1.25rem;cursor:pointer;font-weight:700;">
+                            <i class="fas fa-sun" style="font-size:1.8rem;display:block;margin-bottom:.5rem;"></i>
+                            Modo claro
+                        </button>
+                        <button type="button" onclick="document.documentElement.setAttribute('data-theme','dark');localStorage.setItem('theme','dark');applyThemeIcon();" style="flex:1;background:linear-gradient(135deg,#1e293b,#0f172a);color:#fff;border:none;border-radius:12px;padding:1.25rem;cursor:pointer;font-weight:700;">
+                            <i class="fas fa-moon" style="font-size:1.8rem;display:block;margin-bottom:.5rem;"></i>
+                            Modo oscuro
+                        </button>
+                    </div>
+                </div>
+
+                <div class="cfg-card">
+                    <h3><i class="fas fa-bell"></i> Notificaciones del navegador</h3>
+                    <p class="desc">Recibe alertas cuando se registren nuevas encomiendas, aunque tengas el sistema en otra pestaña.</p>
+
+                    <div id="notifsStatus" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:1.1rem 1.25rem;display:flex;align-items:center;gap:1rem;">
+                        <div id="notifsIco" style="width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;background:#fef3c7;color:#b45309;">
+                            <i class="far fa-bell"></i>
+                        </div>
+                        <div style="flex:1;">
+                            <div id="notifsTitle" style="font-size:.95rem;font-weight:800;color:#0f172a;">Notificaciones desactivadas</div>
+                            <div id="notifsDesc" style="font-size:.78rem;color:#64748b;">Activa para recibir alertas en tiempo real.</div>
+                        </div>
+                        <button type="button" id="notifPermBtn" onclick="pedirPermisoNotifs()" style="background:linear-gradient(135deg,#4f46e5,#3b82f6);color:#fff;border:none;border-radius:10px;padding:.6rem 1.2rem;font-weight:700;font-size:.82rem;cursor:pointer;display:inline-flex;align-items:center;gap:.45rem;">
+                            <i class="fas fa-bell"></i> Activar
+                        </button>
+                    </div>
+
+                    <button type="button" onclick="showNotif('🧪 Prueba', 'Esta es una notificación de prueba del sistema.', '/')" style="margin-top:.85rem;background:#fff;border:1.5px solid #e2e8f0;color:#475569;border-radius:10px;padding:.55rem 1.1rem;font-size:.8rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;">
+                        <i class="fas fa-vial"></i> Enviar notificación de prueba
+                    </button>
+                </div>
+            </div>
+
+            <!-- ATAJOS -->
+            <div class="cfg-tab-content" id="tab-atajos" style="display:none;">
+                <div class="cfg-card">
+                    <h3><i class="fas fa-keyboard"></i> Atajos de teclado</h3>
+                    <p class="desc">Navega más rápido con estos atajos</p>
+
+                    <div style="display:flex;flex-direction:column;gap:.45rem;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:.7rem 1rem;background:#f8fafc;border-radius:10px;">
+                            <span style="font-size:.85rem;color:#475569;">Nueva encomienda</span>
+                            <kbd style="background:#0f172a;color:#fff;padding:.25rem .65rem;border-radius:6px;font-size:.78rem;font-family:monospace;">N</kbd>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:.7rem 1rem;background:#f8fafc;border-radius:10px;">
+                            <span style="font-size:.85rem;color:#475569;">Ir al Dashboard</span>
+                            <kbd style="background:#0f172a;color:#fff;padding:.25rem .65rem;border-radius:6px;font-size:.78rem;font-family:monospace;">D</kbd>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:.7rem 1rem;background:#f8fafc;border-radius:10px;">
+                            <span style="font-size:.85rem;color:#475569;">Ver clientes</span>
+                            <kbd style="background:#0f172a;color:#fff;padding:.25rem .65rem;border-radius:6px;font-size:.78rem;font-family:monospace;">C</kbd>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:.7rem 1rem;background:#f8fafc;border-radius:10px;">
+                            <span style="font-size:.85rem;color:#475569;">Ver encomiendas</span>
+                            <kbd style="background:#0f172a;color:#fff;padding:.25rem .65rem;border-radius:6px;font-size:.78rem;font-family:monospace;">E</kbd>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:.7rem 1rem;background:#f8fafc;border-radius:10px;">
+                            <span style="font-size:.85rem;color:#475569;">Foco en buscador</span>
+                            <kbd style="background:#0f172a;color:#fff;padding:.25rem .65rem;border-radius:6px;font-size:.78rem;font-family:monospace;">/</kbd>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:.7rem 1rem;background:#f8fafc;border-radius:10px;">
+                            <span style="font-size:.85rem;color:#475569;">Búsqueda global</span>
+                            <kbd style="background:#4f46e5;color:#fff;padding:.25rem .65rem;border-radius:6px;font-size:.78rem;font-family:monospace;">Ctrl + K</kbd>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showTab(name, btn) {
+    document.querySelectorAll('.cfg-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.cfg-tab-content').forEach(c => c.style.display = 'none');
+    btn.classList.add('active');
+    document.getElementById('tab-' + name).style.display = 'block';
+}
+
+// 🔔 Update notification banner state
+function updateNotifsUI() {
+    const ico = document.getElementById('notifsIco');
+    const title = document.getElementById('notifsTitle');
+    const desc = document.getElementById('notifsDesc');
+    const btn = document.getElementById('notifPermBtn');
+    if (!('Notification' in window)) {
+        title.textContent = 'No disponible';
+        desc.textContent = 'Tu navegador no soporta notificaciones.';
+        if (btn) btn.style.display = 'none';
+        return;
+    }
+    if (Notification.permission === 'granted') {
+        ico.style.background = '#d1fae5';
+        ico.style.color = '#047857';
+        ico.innerHTML = '<i class="fas fa-bell"></i>';
+        title.textContent = 'Notificaciones activas ✓';
+        desc.textContent = 'Recibirás alertas cuando se registren nuevas encomiendas.';
+        if (btn) btn.style.display = 'none';
+    } else if (Notification.permission === 'denied') {
+        ico.style.background = '#fee2e2';
+        ico.style.color = '#b91c1c';
+        ico.innerHTML = '<i class="fas fa-bell-slash"></i>';
+        title.textContent = 'Notificaciones bloqueadas';
+        desc.textContent = 'Debes habilitarlas desde la configuración del navegador.';
+        if (btn) btn.textContent = 'Bloqueado';
+    }
+}
+updateNotifsUI();
+</script>
+{% endblock %}

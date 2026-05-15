@@ -1,0 +1,772 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ encomienda.codigo }} | Rastreo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <style>
+        html, body {
+            margin: 0; padding: 0; min-height: 100vh;
+            background: #f1f5f9;
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: #0f172a;
+        }
+
+        /* Header */
+        .nav-bar {
+            background: linear-gradient(135deg, #1e1b4b, #4f46e5);
+            color: #fff; padding: .9rem 0;
+            box-shadow: 0 2px 12px rgba(0,0,0,.1);
+        }
+        .nav-content {
+            max-width: 1100px; margin: 0 auto; padding: 0 1.5rem;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 1rem;
+        }
+        .nav-brand { display: flex; align-items: center; gap: .65rem; font-weight: 800; font-size: 1rem; }
+        .nav-brand-icon {
+            width: 36px; height: 36px; border-radius: 10px;
+            background: rgba(255,255,255,.2); border: 1.5px solid rgba(255,255,255,.3);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .nav-back {
+            display: inline-flex; align-items: center; gap: .4rem;
+            padding: .45rem .9rem; border-radius: 10px;
+            background: rgba(255,255,255,.15); color: #fff;
+            font-size: .8rem; font-weight: 600; text-decoration: none;
+            border: 1px solid rgba(255,255,255,.25); transition: all .2s;
+        }
+        .nav-back:hover { background: rgba(255,255,255,.25); color: #fff; }
+
+        .container-tk { max-width: 1100px; margin: 1.5rem auto 3rem; padding: 0 1.5rem; }
+
+        /* ── Hero card del estado ── */
+        .hero-status {
+            background: #fff; border-radius: 18px;
+            padding: 1.75rem 2rem;
+            box-shadow: 0 6px 24px rgba(0,0,0,.06);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 1.25rem;
+            position: relative; overflow: hidden;
+        }
+        .hero-row {
+            display: flex; align-items: center; gap: 1.5rem;
+            flex-wrap: wrap; margin-bottom: 1.5rem;
+        }
+        .hero-icon {
+            width: 80px; height: 80px; border-radius: 22px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; color: #fff; flex-shrink: 0;
+        }
+        .hero-icon.PE { background: linear-gradient(135deg, #94a3b8, #64748b); }
+        .hero-icon.TR { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .hero-icon.DE { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .hero-icon.EN { background: linear-gradient(135deg, #10b981, #059669); }
+        .hero-icon.DV { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+
+        .hero-info { flex: 1; min-width: 250px; }
+        .hero-code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .8rem; font-weight: 700;
+            background: #e0e7ff; color: #4f46e5;
+            display: inline-block; padding: .25rem .65rem;
+            border-radius: 8px; margin-bottom: .5rem;
+        }
+        .hero-status-text { font-size: 1.6rem; font-weight: 800; margin: 0 0 .35rem; }
+        .hero-status-sub { font-size: .9rem; color: #64748b; margin: 0; }
+
+        /* ── Progress bar visual ── */
+        .progress-track {
+            position: relative;
+            background: #f1f5f9;
+            border-radius: 999px;
+            height: 8px;
+            margin-top: 1.25rem;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; border-radius: 999px;
+            background: linear-gradient(90deg, #4f46e5, #6366f1, #8b5cf6);
+            transition: width 1s ease-out;
+            box-shadow: 0 0 12px rgba(79,70,229,.4);
+        }
+        .progress-fill.entregado { background: linear-gradient(90deg, #10b981, #059669); box-shadow: 0 0 12px rgba(16,185,129,.4); }
+        .progress-fill.devuelto  { background: linear-gradient(90deg, #ef4444, #b91c1c); box-shadow: 0 0 12px rgba(239,68,68,.4); }
+
+        .progress-steps {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            margin-top: 1.5rem; gap: .5rem;
+        }
+        .step {
+            display: flex; flex-direction: column; align-items: center; gap: .35rem;
+            text-align: center;
+        }
+        .step-circle {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: #f1f5f9; color: #cbd5e1;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .85rem;
+            border: 2.5px solid #e2e8f0;
+            transition: all .25s;
+        }
+        .step.done .step-circle {
+            background: #10b981; color: #fff; border-color: #10b981;
+        }
+        .step.active .step-circle {
+            background: #4f46e5; color: #fff; border-color: #4f46e5;
+            box-shadow: 0 0 0 5px rgba(79,70,229,.18);
+            animation: stepPulse 1.6s ease-in-out infinite;
+        }
+        @keyframes stepPulse {
+            0%, 100% { box-shadow: 0 0 0 5px rgba(79,70,229,.18); }
+            50% { box-shadow: 0 0 0 10px rgba(79,70,229,.05); }
+        }
+        .step-label {
+            font-size: .72rem; font-weight: 700;
+            color: #94a3b8; line-height: 1.2;
+        }
+        .step.done .step-label, .step.active .step-label { color: #0f172a; }
+
+        /* ── Cards ── */
+        .card-tk {
+            background: #fff; border-radius: 14px;
+            padding: 1.25rem 1.5rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,.05);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 1.25rem;
+        }
+        .card-tk h6 {
+            font-size: .82rem; font-weight: 700; color: #0f172a;
+            margin: 0 0 1rem; display: flex; align-items: center; gap: .5rem;
+        }
+        .card-tk h6 i { color: #4f46e5; }
+
+        /* Ruta visual */
+        .route-visual {
+            display: flex; align-items: center; gap: 1rem;
+            padding: 1rem 1.25rem; background: #f8fafc;
+            border-radius: 12px; border: 1px dashed #cbd5e1;
+        }
+        .route-pt {
+            display: flex; flex-direction: column; align-items: center;
+            gap: .35rem; flex-shrink: 0;
+        }
+        .route-pt .pt-icon {
+            width: 38px; height: 38px; border-radius: 11px;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: .85rem;
+        }
+        .route-pt.origen .pt-icon { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+        .route-pt.destino .pt-icon { background: linear-gradient(135deg, #10b981, #059669); }
+        .route-pt-lbl { font-size: .65rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
+        .route-pt-name { font-size: .9rem; font-weight: 800; color: #0f172a; }
+        .route-line {
+            flex: 1; height: 2px;
+            background: linear-gradient(90deg, #ef4444 0%, #cbd5e1 50%, #10b981 100%);
+            position: relative;
+        }
+        .route-line::before {
+            content: '\f0d1'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+            position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+            background: #fff; padding: 0 .55rem;
+            color: #4f46e5; font-size: 1rem;
+        }
+
+        /* Info grid */
+        .info-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: .85rem;
+        }
+        .info-cell {
+            padding: .85rem; background: #f8fafc;
+            border-radius: 10px; border: 1px solid #e2e8f0;
+        }
+        .info-cell-lbl {
+            font-size: .65rem; font-weight: 700; color: #94a3b8;
+            text-transform: uppercase; letter-spacing: .06em; margin-bottom: .25rem;
+        }
+        .info-cell-val { font-size: .9rem; font-weight: 700; color: #0f172a; }
+
+        /* Personas (privacidad: solo nombres) */
+        .persons {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: .85rem;
+        }
+        .person {
+            padding: 1rem; border-radius: 12px;
+            background: #f8fafc; border: 1px solid #e2e8f0;
+            display: flex; align-items: center; gap: .85rem;
+        }
+        .person-av {
+            width: 42px; height: 42px; border-radius: 50%;
+            color: #fff; font-size: .9rem; font-weight: 800;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .person-av.r { background: linear-gradient(135deg, #4f46e5, #3b82f6); }
+        .person-av.d { background: linear-gradient(135deg, #10b981, #059669); }
+        .person-info { flex: 1; min-width: 0; }
+        .person-lbl { font-size: .65rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
+        .person-name { font-size: .9rem; font-weight: 700; color: #0f172a; line-height: 1.25; }
+
+        /* Timeline */
+        .timeline { position: relative; padding-left: 1.5rem; }
+        .timeline::before {
+            content: ''; position: absolute; left: 11px; top: 5px; bottom: 5px;
+            width: 2px; background: #e2e8f0;
+        }
+        .tl-item { position: relative; margin-bottom: 1.1rem; }
+        .tl-item:last-child { margin-bottom: 0; }
+        .tl-dot {
+            position: absolute; left: -1.5rem; top: 4px;
+            width: 24px; height: 24px; border-radius: 50%;
+            background: #4f46e5; color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .6rem;
+            box-shadow: 0 0 0 4px #fff;
+        }
+        .tl-content {
+            background: #f8fafc; border: 1px solid #e2e8f0;
+            border-radius: 10px; padding: .8rem 1rem;
+        }
+        .tl-trans { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; margin-bottom: .25rem; }
+        .pill {
+            display: inline-flex; padding: .15rem .5rem;
+            border-radius: 10px; font-size: .65rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .04em;
+        }
+        .pill-PE { background: #f1f5f9; color: #475569; }
+        .pill-TR { background: #dbeafe; color: #1d4ed8; }
+        .pill-DE { background: #fef3c7; color: #b45309; }
+        .pill-EN { background: #d1fae5; color: #047857; }
+        .pill-DV { background: #fee2e2; color: #b91c1c; }
+        .tl-meta { font-size: .72rem; color: #64748b; margin-top: .2rem; }
+        .tl-obs { font-size: .8rem; color: #475569; margin-top: .35rem; font-style: italic; }
+
+        /* Live indicator */
+        .live-pill {
+            display: inline-flex; align-items: center; gap: .35rem;
+            background: #d1fae5; color: #047857;
+            font-size: .65rem; font-weight: 700;
+            padding: .2rem .6rem; border-radius: 12px;
+            text-transform: uppercase; letter-spacing: .07em;
+        }
+        .live-pill .dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #10b981; box-shadow: 0 0 8px #10b981;
+            animation: livePulse 1.6s ease-in-out infinite;
+        }
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .4; }
+        }
+
+        @media (max-width: 768px) {
+            .info-grid { grid-template-columns: 1fr; }
+            .persons { grid-template-columns: 1fr; }
+            .progress-steps { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+            .hero-status-text { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-bar">
+        <div class="nav-content">
+            <div class="nav-brand">
+                <div class="nav-brand-icon"><i class="fas fa-shipping-fast"></i></div>
+                Sistema de Encomiendas
+            </div>
+            <a href="{% url 'tracking_landing' %}" class="nav-back">
+                <i class="fas fa-search"></i> Rastrear otro
+            </a>
+        </div>
+    </nav>
+
+    <div class="container-tk">
+
+        <!-- HERO STATUS -->
+        <div class="hero-status">
+            <div class="hero-row">
+                <div class="hero-icon {{ encomienda.estado }}">
+                    {% if encomienda.estado == 'PE' %}<i class="fas fa-clock"></i>
+                    {% elif encomienda.estado == 'TR' %}<i class="fas fa-truck"></i>
+                    {% elif encomienda.estado == 'DE' %}<i class="fas fa-warehouse"></i>
+                    {% elif encomienda.estado == 'EN' %}<i class="fas fa-check-circle"></i>
+                    {% elif encomienda.estado == 'DV' %}<i class="fas fa-undo"></i>
+                    {% endif %}
+                </div>
+                <div class="hero-info">
+                    <span class="hero-code">{{ encomienda.codigo }}</span>
+                    {% if encomienda.estado != 'EN' and encomienda.estado != 'DV' %}
+                    <span class="live-pill" style="margin-left:.5rem;"><span class="dot"></span> En vivo</span>
+                    {% endif %}
+                    <h1 class="hero-status-text">
+                        {% if encomienda.estado == 'PE' %}Esperando recolección
+                        {% elif encomienda.estado == 'TR' %}Tu paquete está en camino
+                        {% elif encomienda.estado == 'DE' %}Llegó a destino
+                        {% elif encomienda.estado == 'EN' %}¡Entregado con éxito!
+                        {% elif encomienda.estado == 'DV' %}Devuelto al remitente
+                        {% endif %}
+                    </h1>
+                    <p class="hero-status-sub">
+                        {% if encomienda.estado == 'PE' %}Tu paquete será recogido pronto del almacén de origen.
+                        {% elif encomienda.estado == 'TR' %}Está viajando hacia <strong>{{ encomienda.ruta.destino }}</strong>.
+                        {% elif encomienda.estado == 'DE' %}Listo para entrega en <strong>{{ encomienda.ruta.destino }}</strong>.
+                        {% elif encomienda.estado == 'EN' %}Entregado el {{ encomienda.fecha_entrega_real|date:'d \d\e F \d\e Y' }}.
+                        {% elif encomienda.estado == 'DV' %}El paquete fue devuelto al remitente.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- PROGRESS BAR -->
+            <div class="progress-track">
+                <div class="progress-fill {% if encomienda.estado == 'EN' %}entregado{% elif encomienda.estado == 'DV' %}devuelto{% endif %}"
+                     style="width: {{ progreso }}%;"></div>
+            </div>
+
+            <div class="progress-steps">
+                <div class="step {% if encomienda.estado != 'PE' %}done{% else %}active{% endif %}">
+                    <div class="step-circle">
+                        {% if encomienda.estado != 'PE' %}<i class="fas fa-check"></i>{% else %}1{% endif %}
+                    </div>
+                    <div class="step-label">Registrado</div>
+                </div>
+                <div class="step {% if encomienda.estado == 'TR' %}active{% elif encomienda.estado == 'DE' or encomienda.estado == 'EN' %}done{% endif %}">
+                    <div class="step-circle">
+                        {% if encomienda.estado == 'DE' or encomienda.estado == 'EN' %}<i class="fas fa-check"></i>
+                        {% elif encomienda.estado == 'TR' %}<i class="fas fa-truck"></i>
+                        {% else %}2{% endif %}
+                    </div>
+                    <div class="step-label">En tránsito</div>
+                </div>
+                <div class="step {% if encomienda.estado == 'DE' %}active{% elif encomienda.estado == 'EN' %}done{% endif %}">
+                    <div class="step-circle">
+                        {% if encomienda.estado == 'EN' %}<i class="fas fa-check"></i>
+                        {% elif encomienda.estado == 'DE' %}<i class="fas fa-warehouse"></i>
+                        {% else %}3{% endif %}
+                    </div>
+                    <div class="step-label">En destino</div>
+                </div>
+                <div class="step {% if encomienda.estado == 'EN' %}done{% endif %}">
+                    <div class="step-circle">
+                        {% if encomienda.estado == 'EN' %}<i class="fas fa-check"></i>
+                        {% else %}4{% endif %}
+                    </div>
+                    <div class="step-label">Entregado</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RUTA VISUAL -->
+        <div class="card-tk">
+            <h6><i class="fas fa-route"></i> Ruta del envío</h6>
+            <div class="route-visual">
+                <div class="route-pt origen">
+                    <div class="pt-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <span class="route-pt-lbl">Origen</span>
+                    <span class="route-pt-name">{{ encomienda.ruta.origen }}</span>
+                </div>
+                <div class="route-line"></div>
+                <div class="route-pt destino">
+                    <div class="pt-icon"><i class="fas fa-flag-checkered"></i></div>
+                    <span class="route-pt-lbl">Destino</span>
+                    <span class="route-pt-name">{{ encomienda.ruta.destino }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🗺️ MAPA REAL -->
+        <div class="card-tk">
+            <h6><i class="fas fa-map-marked-alt"></i> Recorrido en el mapa</h6>
+            <div id="mapa-ruta" style="height: 400px; min-height: 400px; width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; background: #f0f9ff; position: relative; z-index: 1;">
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:.85rem;flex-direction:column;gap:.5rem;" id="mapa-loading">
+                    <div style="width:40px;height:40px;border:3px solid #e0e7ff;border-top-color:#4f46e5;border-radius:50%;animation:spin .8s linear infinite;"></div>
+                    <span>Cargando mapa...</span>
+                </div>
+            </div>
+            <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+        </div>
+
+        <!-- DATOS DEL ENVÍO -->
+        <div class="card-tk">
+            <h6><i class="fas fa-box-open"></i> Detalles del envío</h6>
+            <div class="info-grid">
+                <div class="info-cell">
+                    <div class="info-cell-lbl"><i class="fas fa-weight-hanging"></i> Peso</div>
+                    <div class="info-cell-val">{{ encomienda.peso_kg }} kg</div>
+                </div>
+                <div class="info-cell">
+                    <div class="info-cell-lbl"><i class="far fa-calendar-alt"></i> Fecha estimada</div>
+                    <div class="info-cell-val">{{ encomienda.fecha_entrega_est|date:'d/m/Y'|default:'Por definir' }}</div>
+                </div>
+                <div class="info-cell">
+                    <div class="info-cell-lbl"><i class="fas fa-receipt"></i> Costo</div>
+                    <div class="info-cell-val" style="color:#059669;">S/ {{ encomienda.costo_envio|floatformat:2 }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PERSONAS (privacidad: nombre + inicial del apellido) -->
+        <div class="card-tk">
+            <h6><i class="fas fa-users"></i> Personas involucradas</h6>
+            <div class="persons">
+                <div class="person">
+                    <div class="person-av r">{{ encomienda.remitente.nombres|first|upper }}</div>
+                    <div class="person-info">
+                        <div class="person-lbl">Remitente</div>
+                        <div class="person-name">{{ encomienda.remitente.nombres }} {{ encomienda.remitente.apellidos|slice:":1" }}.</div>
+                    </div>
+                </div>
+                <div class="person">
+                    <div class="person-av d">{{ encomienda.destinatario.nombres|first|upper }}</div>
+                    <div class="person-info">
+                        <div class="person-lbl">Destinatario</div>
+                        <div class="person-name">{{ encomienda.destinatario.nombres }} {{ encomienda.destinatario.apellidos|slice:":1" }}.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HISTORIAL -->
+        <div class="card-tk">
+            <h6><i class="fas fa-history"></i> Historial de movimientos</h6>
+            <div class="timeline">
+                <div class="tl-item">
+                    <div class="tl-dot"><i class="fas fa-plus"></i></div>
+                    <div class="tl-content">
+                        <div class="tl-trans"><span class="pill pill-PE">Registrado</span></div>
+                        <div class="tl-meta"><i class="far fa-clock"></i> {{ encomienda.fecha_registro|date:'d/m/Y H:i' }}</div>
+                        <div class="tl-obs">Paquete recibido en almacén de {{ encomienda.ruta.origen }}.</div>
+                    </div>
+                </div>
+                {% for h in historial %}
+                <div class="tl-item">
+                    <div class="tl-dot"><i class="fas fa-arrow-right"></i></div>
+                    <div class="tl-content">
+                        <div class="tl-trans">
+                            <span class="pill pill-{{ h.estado_anterior }}">{{ h.get_estado_anterior_display }}</span>
+                            <i class="fas fa-arrow-right" style="color:#cbd5e1;font-size:.7rem;"></i>
+                            <span class="pill pill-{{ h.estado_nuevo }}">{{ h.get_estado_nuevo_display }}</span>
+                        </div>
+                        <div class="tl-meta"><i class="far fa-clock"></i> {{ h.fecha_cambio|date:'d/m/Y H:i' }}</div>
+                        {% if h.observacion %}
+                        <div class="tl-obs">"{{ h.observacion }}"</div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- QR PARA COMPARTIR -->
+        <div class="card-tk" style="text-align:center;">
+            <h6 style="justify-content:center;"><i class="fas fa-qrcode"></i> Compartir este seguimiento</h6>
+            <div id="qrcode" style="display:inline-block;padding:1rem;background:#fff;border-radius:14px;box-shadow:0 4px 14px rgba(0,0,0,.06);margin-bottom:.85rem;"></div>
+            <p style="font-size:.78rem;color:#64748b;margin:0;">
+                Escanea el QR con tu celular o comparte el link con alguien más.
+            </p>
+            <div style="margin-top:.85rem;display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;">
+                <button id="btnCopyLink" style="border:1.5px solid #e2e8f0;background:#fff;color:#475569;font-weight:600;border-radius:10px;padding:.45rem 1rem;font-size:.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;">
+                    <i class="fas fa-copy"></i> Copiar link
+                </button>
+                <a id="btnWhatsApp" href="#" target="_blank" style="background:#25d366;color:#fff;font-weight:600;border-radius:10px;padding:.45rem 1rem;font-size:.78rem;text-decoration:none;display:inline-flex;align-items:center;gap:.4rem;">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </a>
+            </div>
+        </div>
+
+        <p style="text-align:center;font-size:.78rem;color:#94a3b8;margin-top:1.5rem;">
+            <i class="fas fa-shield-alt"></i> Por privacidad solo se muestra información parcial.
+            Si necesitas más detalles, contacta a la empresa de envíos.
+        </p>
+    </div>
+
+    <!-- ────────────────────────────────────────
+         🤖 CHATBOT FAQ FLOTANTE
+    ──────────────────────────────────────── -->
+    <button id="chatToggle" onclick="toggleChat()" style="position:fixed;bottom:24px;right:24px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#6366f1,#8b5cf6);color:#fff;border:none;box-shadow:0 8px 24px rgba(79,70,229,.45);cursor:pointer;font-size:1.5rem;z-index:999;display:flex;align-items:center;justify-content:center;transition:transform .25s;">
+        <i class="fas fa-comments" id="chatIcon"></i>
+    </button>
+
+    <div id="chatBox" style="display:none;position:fixed;bottom:96px;right:24px;width:340px;max-width:calc(100vw - 48px);max-height:480px;background:#fff;border-radius:18px;box-shadow:0 16px 48px rgba(0,0,0,.18);z-index:999;flex-direction:column;overflow:hidden;animation:chatSlide .3s ease-out;">
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#4f46e5,#6366f1,#8b5cf6);color:#fff;padding:.95rem 1.1rem;display:flex;align-items:center;gap:.65rem;">
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1rem;">🤖</div>
+            <div style="flex:1;">
+                <div style="font-size:.85rem;font-weight:800;line-height:1.2;">Asistente Virtual</div>
+                <div style="font-size:.7rem;opacity:.85;display:flex;align-items:center;gap:.3rem;">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#34d399;animation:pulse 1.6s infinite;"></span>
+                    En línea — responde al instante
+                </div>
+            </div>
+            <button onclick="toggleChat()" style="background:transparent;border:none;color:#fff;font-size:1rem;cursor:pointer;opacity:.8;">×</button>
+        </div>
+        <!-- Mensajes -->
+        <div id="chatMsgs" style="flex:1;overflow-y:auto;padding:1rem;background:#f8fafc;display:flex;flex-direction:column;gap:.65rem;"></div>
+        <!-- Opciones rápidas -->
+        <div id="chatOpts" style="display:flex;flex-wrap:wrap;gap:.4rem;padding:.75rem 1rem;border-top:1px solid #e2e8f0;background:#fff;"></div>
+    </div>
+    <style>
+        @keyframes chatSlide { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .chat-msg { padding: .65rem .85rem; border-radius: 14px; max-width: 85%; font-size: .82rem; line-height: 1.45; animation: msgIn .25s ease-out; }
+        @keyframes msgIn { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .chat-msg.bot { background: #fff; border: 1px solid #e2e8f0; color: #475569; align-self: flex-start; }
+        .chat-msg.user { background: linear-gradient(135deg,#4f46e5,#6366f1); color: #fff; align-self: flex-end; }
+        .chat-opt { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-size: .75rem; padding: .45rem .75rem; border-radius: 18px; cursor: pointer; transition: all .15s; font-weight: 600; }
+        .chat-opt:hover { background: #4f46e5; color: #fff; border-color: #4f46e5; }
+    </style>
+
+    <!-- Leaflet (mapa) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- QRCode library (sin dependencias) -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+
+    <script>
+    // Esperar a que TODO esté cargado (DOM + librerías externas)
+    window.addEventListener('load', function() {
+        try { initMapa(); } catch(err) {
+            console.error('Error en mapa:', err);
+            const m = document.getElementById('mapa-ruta');
+            if (m) m.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#94a3b8;font-size:.85rem;flex-direction:column;gap:.5rem;"><i class="fas fa-map" style="font-size:2rem;color:#cbd5e1;"></i>No se pudo cargar el mapa</div>';
+        }
+    });
+
+    function initMapa() {
+        if (typeof L === 'undefined' || !document.getElementById('mapa-ruta')) {
+            console.warn('Leaflet no disponible o sin contenedor');
+            return;
+        }
+        // Quitar el loader
+        const loader = document.getElementById('mapa-loading');
+        if (loader) loader.remove();
+
+        // ═══════════════════════════════════════════════════
+        // 🗺️ MAPA con LEAFLET
+        // ═══════════════════════════════════════════════════
+        const ciudadesData = {
+            'lima':           [-12.046, -77.042],
+            'arequipa':       [-16.398, -71.537],
+            'cusco':          [-13.531, -71.967],
+            'trujillo':       [-8.111, -79.029],
+            'piura':          [-5.194, -80.633],
+            'iquitos':        [-3.749, -73.252],
+            'chiclayo':       [-6.776, -79.844],
+            'huancayo':       [-12.066, -75.205],
+            'tacna':          [-18.014, -70.252],
+            'bagua capital':  [-5.629, -78.530],
+            'bagua':          [-5.629, -78.530],
+            'puno':           [-15.840, -70.026],
+            'chimbote':       [-9.083, -78.594],
+            'huaraz':         [-9.527, -77.528],
+            'pucallpa':       [-8.379, -74.553],
+            'tarapoto':       [-6.485, -76.357],
+            'ica':            [-14.067, -75.731],
+            'ayacucho':       [-13.158, -74.222],
+            'juliaca':        [-15.500, -70.133],
+            'cajamarca':      [-7.163, -78.515],
+        };
+
+        const origenNombre  = '{{ encomienda.ruta.origen|escapejs }}';
+        const destinoNombre = '{{ encomienda.ruta.destino|escapejs }}';
+        const origen  = ciudadesData[origenNombre.toLowerCase().trim()]  || [-12.046, -77.042];
+        const destino = ciudadesData[destinoNombre.toLowerCase().trim()] || [-13.531, -71.967];
+
+        // Inicializar el mapa después de que el DOM esté completamente listo
+        const map = L.map('mapa-ruta', {
+            scrollWheelZoom: false,
+            preferCanvas: true,
+        }).setView([-9.19, -75.01], 5);
+
+        // Forzar re-render después de inicializar (fix de Leaflet en contenedores responsivos)
+        setTimeout(() => map.invalidateSize(), 100);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap',
+            maxZoom: 18,
+        }).addTo(map);
+
+        // Iconos personalizados
+        const iconOrigen = L.divIcon({
+            html: '<div style="background:linear-gradient(135deg,#ef4444,#b91c1c);width:32px;height:32px;border-radius:50%;border:3px solid #fff;box-shadow:0 4px 12px rgba(239,68,68,.5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:.85rem;"><i class="fas fa-map-marker-alt"></i></div>',
+            className: '', iconSize: [32, 32], iconAnchor: [16, 16],
+        });
+        const iconDestino = L.divIcon({
+            html: '<div style="background:linear-gradient(135deg,#10b981,#059669);width:32px;height:32px;border-radius:50%;border:3px solid #fff;box-shadow:0 4px 12px rgba(16,185,129,.5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:.85rem;"><i class="fas fa-flag-checkered"></i></div>',
+            className: '', iconSize: [32, 32], iconAnchor: [16, 16],
+        });
+
+        L.marker(origen,  { icon: iconOrigen  }).addTo(map).bindPopup(`<strong>📦 Origen</strong><br>${origenNombre}`);
+        L.marker(destino, { icon: iconDestino }).addTo(map).bindPopup(`<strong>🏁 Destino</strong><br>${destinoNombre}`);
+
+        // Línea entre origen y destino
+        const rutaLine = L.polyline([origen, destino], {
+            color: '#4f46e5', weight: 3.5, dashArray: '10,8', opacity: .85,
+        }).addTo(map);
+
+        // 🚚 PAQUETE ANIMADO sobre la ruta según el estado
+        const estadoPkg = '{{ encomienda.estado }}';
+        const progresoMap = { 'PE': 0.05, 'TR': 0.5, 'DE': 0.95, 'EN': 1.0, 'DV': 0.5 };
+        const progreso = progresoMap[estadoPkg] ?? 0;
+
+        // Interpolación entre origen y destino
+        const lat = origen[0] + (destino[0] - origen[0]) * progreso;
+        const lng = origen[1] + (destino[1] - origen[1]) * progreso;
+
+        const truckColor = estadoPkg === 'EN' ? '#10b981' : (estadoPkg === 'DV' ? '#ef4444' : '#4f46e5');
+        const truckIcon = L.divIcon({
+            html: `<div style="background:linear-gradient(135deg,${truckColor},${truckColor}dd);width:48px;height:48px;border-radius:50%;border:4px solid #fff;box-shadow:0 6px 24px rgba(79,70,229,.5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;animation:truckBounce 1.8s ease-in-out infinite;">
+                <i class="fas fa-${estadoPkg === 'EN' ? 'check' : (estadoPkg === 'DV' ? 'undo' : 'truck-fast')}"></i>
+            </div>`,
+            className: '', iconSize: [48, 48], iconAnchor: [24, 24],
+        });
+
+        const truckMarker = L.marker([lat, lng], { icon: truckIcon, zIndexOffset: 1000 }).addTo(map);
+        truckMarker.bindPopup(`<strong>📍 Tu paquete está aquí</strong><br>{{ progreso }}% recorrido`).openPopup();
+
+        // Línea sólida del recorrido completado
+        if (progreso > 0) {
+            L.polyline([origen, [lat, lng]], {
+                color: '#10b981', weight: 4.5, opacity: .95,
+            }).addTo(map);
+        }
+
+        // Ajusta el zoom para mostrar ambos puntos + paquete
+        map.fitBounds([origen, destino], { padding: [60, 60] });
+
+        // Animación CSS para el rebote
+        const style = document.createElement('style');
+        style.textContent = `@keyframes truckBounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-6px) scale(1.05); }
+        }`;
+        document.head.appendChild(style);
+
+        // Forzar recálculo de tamaño después de un breve delay
+        setTimeout(() => map.invalidateSize(), 200);
+    }
+    // FIN de initMapa()
+
+    (function() {
+        // ═══════════════════════════════════════════════════
+        // 📱 QR CODE
+        // ═══════════════════════════════════════════════════
+        const trackingUrl = window.location.href;
+        const qr = qrcode(0, 'M');
+        qr.addData(trackingUrl);
+        qr.make();
+        document.getElementById('qrcode').innerHTML = qr.createImgTag(5, 0);
+
+        // Copiar link al portapapeles
+        document.getElementById('btnCopyLink')?.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(trackingUrl);
+                const btn = document.getElementById('btnCopyLink');
+                const original = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check" style="color:#10b981;"></i> Copiado';
+                setTimeout(() => btn.innerHTML = original, 1800);
+            } catch (err) {
+                prompt('Copia este link:', trackingUrl);
+            }
+        });
+
+        // WhatsApp share
+        const codigo = '{{ encomienda.codigo }}';
+        const wspText = encodeURIComponent(`¡Hola! Aquí puedes rastrear tu paquete ${codigo} en tiempo real: ${trackingUrl}`);
+        document.getElementById('btnWhatsApp').href = `https://wa.me/?text=${wspText}`;
+
+        // 🔴 Auto-refresh cada 30 segundos para ver cambios en vivo
+        if (!['EN', 'DV'].includes('{{ encomienda.estado }}')) {
+            setInterval(() => location.reload(), 30000);
+        }
+
+        // ════════════════════════════════════════════════════
+        // 🤖 CHATBOT FAQ
+        // ════════════════════════════════════════════════════
+        const estadoActual = '{{ encomienda.estado }}';
+        const origenCity  = '{{ encomienda.ruta.origen|escapejs }}';
+        const destinoCity = '{{ encomienda.ruta.destino|escapejs }}';
+        const fechaEst = '{{ encomienda.fecha_entrega_est|date:"d/m/Y"|default:"por definir" }}';
+        const costo = '{{ encomienda.costo_envio }}';
+
+        const chatBox = document.getElementById('chatBox');
+        const chatToggleBtn = document.getElementById('chatToggle');
+        const chatIcon = document.getElementById('chatIcon');
+        const chatMsgs = document.getElementById('chatMsgs');
+        const chatOpts = document.getElementById('chatOpts');
+
+        function toggleChat() {
+            const visible = chatBox.style.display === 'flex';
+            chatBox.style.display = visible ? 'none' : 'flex';
+            chatIcon.className = visible ? 'fas fa-comments' : 'fas fa-times';
+            if (!visible && chatMsgs.children.length === 0) {
+                botSays('¡Hola! 👋 Soy el asistente virtual.<br>¿En qué puedo ayudarte hoy con tu paquete <strong>' + codigo + '</strong>?');
+                showOpts();
+            }
+        }
+
+        function addMsg(text, sender = 'bot') {
+            const m = document.createElement('div');
+            m.className = 'chat-msg ' + sender;
+            m.innerHTML = text;
+            chatMsgs.appendChild(m);
+            chatMsgs.scrollTop = chatMsgs.scrollHeight;
+        }
+
+        function botSays(text, delay = 300) {
+            setTimeout(() => addMsg(text, 'bot'), delay);
+        }
+
+        const FAQ = [
+            { q: '📍 ¿Dónde está mi paquete?', a: () => {
+                const respuestas = {
+                    'PE': 'Tu paquete está <strong>esperando recolección</strong> en el almacén de <strong>' + origenCity + '</strong>. Saldrá pronto. 📦',
+                    'TR': 'Tu paquete está <strong>en tránsito</strong> entre <strong>' + origenCity + '</strong> y <strong>' + destinoCity + '</strong>. 🚚',
+                    'DE': 'Tu paquete <strong>ya llegó a ' + destinoCity + '</strong> y está listo para entrega. 📍',
+                    'EN': '¡Tu paquete fue <strong>entregado con éxito</strong>! ✅',
+                    'DV': 'Tu paquete fue <strong>devuelto al remitente</strong>. Contacta a la empresa para más detalles. ↩️',
+                };
+                return respuestas[estadoActual] || 'Estado desconocido.';
+            }},
+            { q: '📅 ¿Cuándo llegará?', a: () => {
+                if (estadoActual === 'EN') return 'Tu paquete <strong>ya fue entregado</strong>. 🎉';
+                if (estadoActual === 'DV') return 'Tu paquete fue devuelto. ↩️';
+                return 'La fecha estimada de entrega es <strong>' + fechaEst + '</strong>. 📅 Puede variar según el clima y la ruta.';
+            }},
+            { q: '💰 ¿Cuánto costó el envío?', a: () => {
+                return 'El costo de envío de tu paquete es <strong>S/ ' + costo + '</strong>. Si pagaste contra entrega, recuerda tener el monto listo. 💵';
+            }},
+            { q: '📞 ¿Cómo contacto al remitente?', a: () => {
+                return 'Por privacidad, no compartimos los datos del remitente aquí. Si necesitas contactarlo, comunícate directamente con la empresa de envíos. 🔒';
+            }},
+            { q: '🛡️ ¿Es seguro mi paquete?', a: () => {
+                return '¡Sí! Tu paquete está asegurado y monitoreado durante toda la ruta. Cada cambio de estado queda registrado y puedes verlo en el historial arriba. ✅';
+            }},
+            { q: '📦 ¿Qué hacer si no llega?', a: () => {
+                return 'Si tu paquete no llega en la fecha estimada, contacta a la empresa de envíos con tu código <strong>' + codigo + '</strong>. Te ayudaremos a resolver cualquier inconveniente. 🤝';
+            }},
+            { q: '🔄 Quiero hacer otra pregunta', a: () => {
+                showOpts();
+                return '¡Claro! Selecciona otra pregunta abajo. 👇';
+            }},
+        ];
+
+        function showOpts() {
+            chatOpts.innerHTML = '';
+            FAQ.forEach((item, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'chat-opt';
+                btn.textContent = item.q;
+                btn.onclick = () => {
+                    addMsg(item.q, 'user');
+                    chatOpts.innerHTML = '<span style="font-size:.72rem;color:#94a3b8;padding:.45rem;">🤖 Escribiendo...</span>';
+                    botSays(item.a(), 600);
+                    setTimeout(showOpts, 700);
+                };
+                chatOpts.appendChild(btn);
+            });
+        }
+    })(); // Fin del IIFE
+    </script>
+</body>
+</html>

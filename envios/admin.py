@@ -39,7 +39,23 @@ class EmpleadoAdmin(admin.ModelAdmin):
 
 @admin.register(HistorialEstado)
 class HistorialEstadoAdmin(admin.ModelAdmin):
+    """
+    El historial es un log de auditoría: se crea automáticamente
+    cuando se llama a Encomienda.cambiar_estado().
+    NO se puede crear ni editar manualmente — solo consultar.
+    """
     list_display    = ('encomienda', 'estado_anterior', 'estado_nuevo', 'empleado', 'fecha_cambio')
-    readonly_fields = ('encomienda', 'estado_anterior', 'estado_nuevo', 'empleado', 'fecha_cambio')
+    readonly_fields = ('encomienda', 'estado_anterior', 'estado_nuevo', 'empleado', 'fecha_cambio', 'observacion')
     list_filter     = ('estado_nuevo',)
+    search_fields   = ('encomienda__codigo', 'empleado__apellidos')
     ordering        = ('-fecha_cambio',)
+    list_per_page   = 30
+
+    def has_add_permission(self, request):
+        return False  # No se permite crear manualmente
+
+    def has_change_permission(self, request, obj=None):
+        return False  # No se permite editar (solo ver)
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser  # Solo superuser puede borrar

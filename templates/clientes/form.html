@@ -1,0 +1,486 @@
+{% extends 'base.html' %}
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-page { max-width: 1100px; margin: 0 auto; }
+
+/* Header */
+.fph { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; }
+.fph-title { display:flex; align-items:center; gap:.85rem; }
+.fph-icon {
+    width: 48px; height: 48px; border-radius: 13px;
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem; color: #fff;
+    box-shadow: 0 5px 16px rgba(79,70,229,.35);
+}
+.fph h2 { font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0; line-height: 1.2; }
+.fph p  { font-size: .8rem; color: #94a3b8; margin: .15rem 0 0; }
+.fph p .badge-live {
+    display: inline-flex; align-items: center; gap: .3rem;
+    background: #dcfce7; color: #047857;
+    font-size: .68rem; font-weight: 700;
+    padding: .15rem .55rem; border-radius: 12px;
+    margin-left: .4rem;
+}
+.fph p .badge-live .dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: #10b981; animation: pulse 1.6s infinite;
+}
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+
+.btn-back {
+    display:inline-flex; align-items:center; gap:.45rem;
+    padding:.5rem 1rem; border-radius:10px;
+    border:1.5px solid #e2e8f0; background:#fff;
+    color:#475569; font-weight:600; font-size:.82rem;
+    text-decoration:none; transition:all .2s;
+}
+.btn-back:hover { border-color:#4f46e5; color:#4f46e5; background:#e0e7ff; }
+
+/* Card */
+.unified-card {
+    background: #fff; border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+.section { padding: 1.4rem 1.75rem; border-bottom: 1px solid #f1f5f9; }
+.section:last-of-type { border-bottom: none; }
+
+.section-head { display: flex; align-items: center; gap: .7rem; margin-bottom: 1.1rem; }
+.section-icon {
+    width: 32px; height: 32px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .82rem; color: #fff; flex-shrink: 0;
+}
+.section-icon.purple { background: linear-gradient(135deg,#4f46e5,#6d28d9); }
+.section-icon.blue   { background: linear-gradient(135deg,#3b82f6,#2563eb); }
+.section-icon.green  { background: linear-gradient(135deg,#10b981,#059669); }
+.section-title { font-size: .9rem; font-weight: 700; color: #0f172a; margin: 0; flex: 1; }
+.section-title small { display: block; font-size: .73rem; color: #94a3b8; font-weight: 500; margin-top: .15rem; }
+
+/* Labels */
+.form-label {
+    font-weight: 700; font-size: .7rem; color: #64748b;
+    margin-bottom: .35rem; display: block;
+    text-transform: uppercase; letter-spacing: .05em;
+}
+
+/* Inputs */
+.form-control, .form-select {
+    border-radius: 10px; border: 1.5px solid #e2e8f0;
+    padding: .65rem .9rem; font-size: .9rem; color: #0f172a;
+    transition: all .2s; width: 100%; background: #fff;
+    font-family: inherit;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.1); outline: none;
+}
+textarea.form-control { min-height: 75px; resize: vertical; }
+.field-error { color: #ef4444; font-size: .72rem; margin-top: .25rem; }
+
+/* DNI input integrado con buscador */
+.dni-input-wrap { position: relative; }
+.dni-input-wrap input {
+    padding-right: 2.7rem;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-weight: 600; letter-spacing: .04em;
+}
+.dni-spinner-wrap {
+    position: absolute; right: .85rem; top: 50%; transform: translateY(-50%);
+    display: none; align-items: center; justify-content: center;
+    width: 22px; height: 22px;
+}
+.dni-spinner-wrap.show { display: flex; }
+.dni-spinner {
+    width: 16px; height: 16px;
+    border: 2.2px solid #e0e7ff; border-top-color: #4f46e5;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.dni-check {
+    position: absolute; right: .85rem; top: 50%; transform: translateY(-50%);
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #10b981; color: #fff;
+    display: none; align-items: center; justify-content: center;
+    font-size: .65rem;
+    animation: pop .3s ease-out;
+}
+.dni-check.show { display: flex; }
+@keyframes pop {
+    0% { transform: translateY(-50%) scale(0); }
+    70% { transform: translateY(-50%) scale(1.2); }
+    100% { transform: translateY(-50%) scale(1); }
+}
+
+/* Status pill (compacto, debajo del DNI) */
+.dni-status {
+    margin-top: .55rem; padding: .55rem .85rem;
+    border-radius: 10px; font-size: .78rem; font-weight: 600;
+    display: none; align-items: center; gap: .55rem;
+    line-height: 1.4;
+}
+.dni-status.show { display: flex; }
+.dni-status.ok    { background: #d1fae5; color: #047857; border: 1px solid #6ee7b7; }
+.dni-status.warn  { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
+.dni-status.err   { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+.dni-status.info  { background: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
+.dni-status a { color: inherit; text-decoration: underline; font-weight: 700; }
+
+/* Highlight when auto-filled */
+.form-control.autofilled, .form-select.autofilled {
+    background: linear-gradient(90deg, #f0fdf4, #fff);
+    border-color: #10b981;
+    animation: flash 1s ease-out;
+}
+.form-control.suggested, .form-select.suggested {
+    background: linear-gradient(90deg, #fffbeb, #fff);
+    border-color: #f59e0b;
+}
+@keyframes flash {
+    0%   { box-shadow: 0 0 0 0 rgba(16,185,129,.5); }
+    100% { box-shadow: 0 0 0 8px rgba(16,185,129,0); }
+}
+
+/* Badge "sugerido" */
+.field-wrap { position: relative; }
+.suggested-badge {
+    position: absolute; right: .6rem; top: 50%; transform: translateY(-50%);
+    background: #fef3c7; color: #92400e;
+    font-size: .6rem; font-weight: 700; padding: .15rem .45rem;
+    border-radius: 10px; pointer-events: none;
+    text-transform: uppercase; letter-spacing: .04em;
+    display: none;
+}
+.suggested-badge.show { display: inline-block; }
+.field-wrap textarea ~ .suggested-badge { top: 1rem; transform: none; }
+
+/* DNI hint inline */
+.dni-hint {
+    font-size: .72rem; color: #94a3b8;
+    margin-top: .3rem; display: flex; align-items: center; gap: .35rem;
+}
+.dni-hint i { color: #4f46e5; }
+
+/* Footer */
+.form-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem 1.75rem; background: #fafbff;
+    border-top: 1px solid #f1f5f9;
+    flex-wrap: wrap; gap: .75rem;
+}
+.form-footer-info { font-size: .78rem; color: #64748b; display: flex; align-items: center; gap: .4rem; }
+.form-footer-info i { color: #10b981; }
+.form-footer-buttons { display: flex; gap: .55rem; }
+
+.btn-cancel {
+    padding: .6rem 1.3rem; border-radius: 10px;
+    border: 1.5px solid #e2e8f0; background: #fff;
+    color: #475569; font-weight: 600; font-size: .85rem; cursor: pointer;
+    text-decoration: none; display: inline-flex; align-items: center; gap: .4rem;
+    transition: all .2s;
+}
+.btn-cancel:hover { border-color: #ef4444; color: #ef4444; background: #fef2f2; }
+.btn-save {
+    padding: .65rem 1.6rem; border-radius: 10px; border: none;
+    background: linear-gradient(135deg, #4f46e5, #3b82f6);
+    color: #fff; font-weight: 700; font-size: .88rem; cursor: pointer;
+    display: inline-flex; align-items: center; gap: .45rem;
+    box-shadow: 0 4px 14px rgba(79,70,229,.35);
+    transition: all .2s;
+}
+.btn-save:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(79,70,229,.45); }
+
+@media (max-width: 640px) {
+    .section { padding: 1rem; }
+    .form-footer { padding: .9rem 1rem; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-page">
+
+<!-- HEADER -->
+<div class="fph">
+    <div class="fph-title">
+        <div class="fph-icon"><i class="fas fa-user-plus"></i></div>
+        <div>
+            <h2>{{ titulo }}</h2>
+            <p>
+                Escribe el DNI y los datos se rellenan solos
+                <span class="badge-live"><span class="dot"></span> RENIEC en vivo</span>
+            </p>
+        </div>
+    </div>
+    <a href="{% url 'cliente_lista' %}" class="btn-back">
+        <i class="fas fa-arrow-left"></i> Volver a la lista
+    </a>
+</div>
+
+<form method="post" id="clienteForm">
+    {% csrf_token %}
+
+    <div class="unified-card">
+
+        <!-- Identificación -->
+        <div class="section">
+            <div class="section-head">
+                <div class="section-icon purple"><i class="fas fa-id-card"></i></div>
+                <h6 class="section-title">
+                    Identificación
+                    <small>Tipo, número y nombre del cliente</small>
+                </h6>
+            </div>
+            <div class="row g-3">
+                <div class="col-lg-3 col-md-4">
+                    <label class="form-label">Tipo doc.</label>
+                    {{ form.tipo_doc }}
+                </div>
+                <div class="col-lg-4 col-md-8">
+                    <label class="form-label">Número de documento</label>
+                    <div class="dni-input-wrap">
+                        {{ form.nro_doc }}
+                        <div class="dni-spinner-wrap" id="dniSpinner">
+                            <div class="dni-spinner"></div>
+                        </div>
+                        <div class="dni-check" id="dniCheck">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+                    {% if form.nro_doc.errors %}<div class="field-error">{{ form.nro_doc.errors|join:", " }}</div>{% endif %}
+                </div>
+                <div class="col-lg-5 col-md-12">
+                    <label class="form-label">Nombres</label>
+                    {{ form.nombres }}
+                    {% if form.nombres.errors %}<div class="field-error">{{ form.nombres.errors|join:", " }}</div>{% endif %}
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Apellidos</label>
+                    {{ form.apellidos }}
+                    {% if form.apellidos.errors %}<div class="field-error">{{ form.apellidos.errors|join:", " }}</div>{% endif %}
+                    <div class="dni-status" id="dniStatus"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contacto -->
+        <div class="section">
+            <div class="section-head">
+                <div class="section-icon blue"><i class="fas fa-phone-alt"></i></div>
+                <h6 class="section-title">
+                    Contacto
+                    <small>Teléfono y correo electrónico</small>
+                </h6>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <label class="form-label">Teléfono</label>
+                    {{ form.telefono }}
+                </div>
+                <div class="col-md-7">
+                    <label class="form-label">Correo electrónico</label>
+                    {{ form.email }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Dirección -->
+        <div class="section">
+            <div class="section-head">
+                <div class="section-icon green"><i class="fas fa-map-marker-alt"></i></div>
+                <h6 class="section-title">
+                    Dirección
+                    <small>Domicilio del cliente (opcional)</small>
+                </h6>
+            </div>
+            {{ form.direccion }}
+        </div>
+
+        <!-- Footer -->
+        <div class="form-footer">
+            <div class="form-footer-info">
+                <i class="fas fa-shield-alt"></i> Los datos se almacenan de forma segura
+            </div>
+            <div class="form-footer-buttons">
+                <a href="{% url 'cliente_lista' %}" class="btn-cancel">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+                <button type="submit" class="btn-save">
+                    <i class="fas fa-save"></i> Guardar Cliente
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    const dniInput   = document.querySelector('[name="nro_doc"]');
+    const tipoSelect = document.querySelector('[name="tipo_doc"]');
+    const dniStatus  = document.getElementById('dniStatus');
+    const dniSpinner = document.getElementById('dniSpinner');
+    const dniCheck   = document.getElementById('dniCheck');
+
+    const fNombres   = document.querySelector('[name="nombres"]');
+    const fApellidos = document.querySelector('[name="apellidos"]');
+    const fTelefono  = document.querySelector('[name="telefono"]');
+    const fEmail     = document.querySelector('[name="email"]');
+    const fDireccion = document.querySelector('[name="direccion"]');
+
+    let lastSearched = '';
+
+    function showStatus(type, html) {
+        dniStatus.className = 'dni-status show ' + type;
+        dniStatus.innerHTML = html;
+    }
+    function hideStatus() { dniStatus.className = 'dni-status'; dniStatus.innerHTML = ''; }
+    function showSpinner() { dniSpinner.classList.add('show'); dniCheck.classList.remove('show'); }
+    function showCheck() { dniSpinner.classList.remove('show'); dniCheck.classList.add('show'); setTimeout(() => dniCheck.classList.remove('show'), 2500); }
+    function hideIcons() { dniSpinner.classList.remove('show'); dniCheck.classList.remove('show'); }
+
+    function highlightField(field) {
+        if (!field) return;
+        field.classList.add('autofilled');
+        setTimeout(() => field.classList.remove('autofilled'), 1800);
+    }
+
+    function markSuggested(field) {
+        if (!field) return;
+        field.classList.add('autofilled', 'suggested');
+        setTimeout(() => field.classList.remove('autofilled'), 1800);
+        // Al primer foco/edición, quitar el estilo "suggested"
+        const onEdit = () => {
+            field.classList.remove('suggested');
+            field.removeEventListener('focus', onEdit);
+            field.removeEventListener('input', onEdit);
+        };
+        field.addEventListener('focus', onEdit);
+        field.addEventListener('input', onEdit);
+    }
+
+    async function buscarDNI(dni) {
+        if (dni === lastSearched) return;
+        lastSearched = dni;
+
+        showSpinner();
+        showStatus('info', '<i class="fas fa-search"></i> Consultando RENIEC...');
+
+        try {
+            const response = await fetch(`/api/v1/reniec/dni/${dni}/`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin',
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+                hideIcons();
+                showStatus('err', `<i class="fas fa-times-circle"></i> ${data.error || 'No se pudo consultar el DNI.'}`);
+                return;
+            }
+
+            // Auto-rellenar
+            // Nombres y apellidos siempre van con el highlight verde (datos verificados)
+            if (fNombres)   { fNombres.value   = data.nombres;   highlightField(fNombres); }
+            if (fApellidos) { fApellidos.value = data.apellidos; highlightField(fApellidos); }
+
+            // Si vienen de cliente local: datos reales (verde)
+            // Si son sugerencias auto-generadas: amarillo (editables)
+            const useSuggested = data.datos_sugeridos === true;
+            const fillField = (field, value, force = false) => {
+                if (!field || !value) return;
+                if (!force && field.value && field.value.trim() !== '') return;
+                field.value = value;
+                if (useSuggested) markSuggested(field);
+                else highlightField(field);
+            };
+            fillField(fTelefono,  data.telefono);
+            fillField(fEmail,     data.email);
+            fillField(fDireccion, data.direccion);
+
+            showCheck();
+
+            if (data.fuente === 'reniec') {
+                showStatus('ok', `<i class="fas fa-check-circle"></i> <span>Datos correctos</span>`);
+            } else if (data.fuente === 'local') {
+                showStatus('warn', `<i class="fas fa-info-circle"></i> <span>Cliente ya existe en el sistema. <a href="/clientes/${data.cliente_id}/">Ver perfil →</a></span>`);
+            } else {
+                showStatus('warn', `<i class="fas fa-flask"></i> <span>Modo demo</span>`);
+            }
+        } catch (err) {
+            hideIcons();
+            showStatus('err', '<i class="fas fa-times-circle"></i> Error de red. Verifica tu conexión.');
+        }
+    }
+
+    // 🧹 Limpia los campos del formulario (excepto el DNI mismo)
+    function limpiarFormulario() {
+        if (fNombres)   fNombres.value = '';
+        if (fApellidos) fApellidos.value = '';
+        if (fTelefono)  fTelefono.value = '';
+        if (fEmail)     fEmail.value = '';
+        if (fDireccion) fDireccion.value = '';
+        // Quitar marcas visuales
+        [fNombres, fApellidos, fTelefono, fEmail, fDireccion].forEach(f => {
+            if (f) f.classList.remove('autofilled', 'suggested');
+        });
+    }
+
+    // Límite por tipo de documento
+    function getMaxLen() {
+        const tipo = tipoSelect ? tipoSelect.value : 'DNI';
+        if (tipo === 'DNI') return 8;
+        if (tipo === 'RUC') return 11;
+        return 15; // Pasaporte u otros
+    }
+
+    // Aplicar maxlength inicial al input según el tipo
+    function syncMaxLength() {
+        dniInput.setAttribute('maxlength', getMaxLen());
+    }
+    syncMaxLength();
+
+    // Solo dígitos + límite según tipo de documento
+    dniInput.addEventListener('input', e => {
+        const maxLen = getMaxLen();
+        let cleaned = e.target.value.replace(/[^0-9]/g, '');
+        if (cleaned.length > maxLen) cleaned = cleaned.slice(0, maxLen);
+        if (cleaned !== e.target.value) e.target.value = cleaned;
+
+        const tipo = tipoSelect ? tipoSelect.value : 'DNI';
+
+        // 🧹 Si el usuario está cambiando el DNI, limpiar los campos previos
+        if (lastSearched && cleaned !== lastSearched) {
+            limpiarFormulario();
+            lastSearched = '';
+        }
+
+        // Solo activa búsqueda en DNI con 8 dígitos exactos
+        if (tipo === 'DNI' && cleaned.length === 8) {
+            buscarDNI(cleaned);
+        } else if (cleaned.length < 8) {
+            hideIcons();
+            hideStatus();
+            lastSearched = '';
+        }
+    });
+
+    // Si cambia el tipo doc, limpia el status
+    if (tipoSelect) {
+        tipoSelect.addEventListener('change', () => {
+            hideIcons();
+            hideStatus();
+            lastSearched = '';
+        });
+    }
+})();
+</script>
+{% endblock %}

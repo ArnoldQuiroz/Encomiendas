@@ -1,0 +1,13 @@
+Hola {{ encomienda.destinatario.nombres }},
+
+Tu paquete con código {{ encomienda.codigo }} tuvo una actualización.
+
+Estado actual: {{ encomienda.get_estado_display }}
+Ruta: {{ encomienda.ruta.origen }} → {{ encomienda.ruta.destino }}
+{% if encomienda.fecha_entrega_est %}Fecha estimada: {{ encomienda.fecha_entrega_est|date:'d/m/Y' }}{% endif %}
+
+Rastrea tu paquete aquí:
+{{ tracking_url }}
+
+---
+Sistema de Gestión de Encomiendas © 2026

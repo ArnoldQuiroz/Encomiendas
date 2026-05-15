@@ -1,73 +1,355 @@
 {% load static %}
-<nav class="navbar navbar-expand-lg navbar-dark">
-    <div class="container">
-        <a class="navbar-brand" href="{% url 'dashboard' %}">
-            <div class="brand-icon"><i class="fas fa-shipping-fast"></i></div>
-            Encomiendas
+<style>
+/* ════════════════════════════════════════
+   NAVBAR — Diseño limpio y espacioso
+═══════════════════════════════════════ */
+.navbar-pro {
+    background: linear-gradient(135deg, #1e1b4b 0%, #4338ca 50%, #4f46e5 100%);
+    padding: 0;
+    box-shadow: 0 2px 12px rgba(0,0,0,.15);
+    position: sticky; top: 0; z-index: 100;
+}
+.navbar-pro .nv-inner {
+    max-width: 1400px; margin: 0 auto;
+    padding: .75rem 1.5rem;
+    display: flex; align-items: center; gap: 1.5rem;
+}
+
+/* Brand */
+.nv-brand {
+    display: flex; align-items: center; gap: .65rem;
+    color: #fff; text-decoration: none;
+    font-weight: 800; font-size: 1.05rem;
+    flex-shrink: 0;
+}
+.nv-brand:hover { color: #fff; }
+.nv-brand-ico {
+    width: 38px; height: 38px; border-radius: 11px;
+    background: rgba(255,255,255,.18);
+    border: 1.5px solid rgba(255,255,255,.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+}
+
+/* Main links */
+.nv-main { display: flex; align-items: center; gap: .15rem; flex: 1; }
+.nv-link {
+    display: inline-flex; align-items: center; gap: .45rem;
+    padding: .55rem .85rem;
+    color: rgba(255,255,255,.85);
+    text-decoration: none; border-radius: 9px;
+    font-size: .85rem; font-weight: 600;
+    transition: all .15s; position: relative;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+.nv-link:hover { background: rgba(255,255,255,.1); color: #fff; }
+.nv-link.active {
+    background: rgba(255,255,255,.16);
+    color: #fff;
+    border-color: rgba(255,255,255,.18);
+}
+.nv-link i { font-size: .82rem; opacity: .9; }
+.nv-link .badge-pro {
+    background: #fff; color: #4f46e5;
+    font-size: .62rem; font-weight: 800;
+    padding: .1rem .4rem; border-radius: 10px;
+    margin-left: .15rem; min-width: 18px; text-align: center;
+}
+.nv-link .badge-pro.danger { background: #ef4444; color: #fff; }
+
+/* Separador vertical sutil */
+.nv-sep {
+    width: 1px; height: 22px;
+    background: rgba(255,255,255,.15);
+    margin: 0 .25rem;
+}
+
+/* Right side actions */
+.nv-actions { display: flex; align-items: center; gap: .35rem; flex-shrink: 0; }
+
+/* Icon buttons (search, theme, bell) */
+.nv-icon-btn {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.15);
+    color: #fff; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: .9rem; transition: all .15s;
+    position: relative; text-decoration: none;
+}
+.nv-icon-btn:hover { background: rgba(255,255,255,.22); color: #fff; transform: translateY(-1px); }
+.nv-icon-btn .badge-notif {
+    position: absolute; top: -3px; right: -3px;
+    background: #ef4444; color: #fff;
+    font-size: .58rem; font-weight: 800;
+    padding: 0 .35rem; height: 16px; min-width: 16px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid #4338ca;
+    line-height: 1;
+}
+
+/* Avatar button */
+.nv-avatar-btn {
+    display: inline-flex; align-items: center; gap: .55rem;
+    padding: .35rem .85rem .35rem .35rem;
+    border-radius: 22px;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.18);
+    color: #fff; text-decoration: none;
+    cursor: pointer; transition: all .15s;
+    margin-left: .25rem;
+}
+.nv-avatar-btn:hover { background: rgba(255,255,255,.22); color: #fff; }
+.nv-avatar-circle {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: linear-gradient(135deg, #fff, #e0e7ff);
+    color: #4f46e5; font-size: .8rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.nv-avatar-info { display: flex; flex-direction: column; line-height: 1.15; }
+.nv-avatar-name { font-size: .82rem; font-weight: 700; }
+.nv-avatar-rol { font-size: .65rem; opacity: .8; }
+
+/* Dropdown estilizado */
+.dropdown-menu {
+    border: none; border-radius: 14px; padding: .4rem;
+    box-shadow: 0 12px 40px rgba(0,0,0,.18);
+    margin-top: .55rem !important;
+    min-width: 240px;
+}
+.dropdown-menu .dropdown-item {
+    border-radius: 8px;
+    padding: .55rem .75rem;
+    font-size: .85rem; font-weight: 500;
+    display: flex; align-items: center; gap: .55rem;
+}
+.dropdown-menu .dropdown-item:hover { background: #f1f5f9; }
+.dropdown-menu hr.dropdown-divider { margin: .35rem 0; }
+.dropdown-menu .dropdown-item-text {
+    padding: .5rem .75rem .25rem;
+    font-size: .68rem; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: .06em; font-weight: 700;
+}
+
+/* Mobile toggle */
+.nv-mobile-toggle {
+    display: none;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.18);
+    color: #fff; width: 38px; height: 38px;
+    border-radius: 10px; cursor: pointer;
+    font-size: 1rem;
+}
+
+@media (max-width: 1100px) {
+    .nv-link span:not(.badge-pro) { display: none; }
+    .nv-link i { font-size: 1rem; }
+    .nv-link { padding: .55rem .65rem; }
+    .nv-avatar-info { display: none; }
+    .nv-avatar-btn { padding: .35rem; border-radius: 50%; }
+}
+@media (max-width: 768px) {
+    .navbar-pro .nv-inner { padding: .65rem 1rem; gap: .75rem; }
+    .nv-main { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #1e1b4b; flex-direction: column; padding: 1rem; align-items: stretch; gap: .4rem; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+    .nv-main.open { display: flex; }
+    .nv-main .nv-link span:not(.badge-pro) { display: inline; }
+    .nv-sep { display: none; }
+    .nv-mobile-toggle { display: flex; align-items: center; justify-content: center; }
+}
+</style>
+
+<nav class="navbar-pro">
+    <div class="nv-inner">
+        <!-- Brand -->
+        <a class="nv-brand" href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'landing_publica' %}{% endif %}">
+            <div class="nv-brand-ico"><i class="fas fa-shipping-fast"></i></div>
+            <span>Encomiendas</span>
         </a>
 
         {% if user.is_authenticated %}
-        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navMenu">
-            <ul class="navbar-nav me-auto gap-1">
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
-                       href="{% url 'dashboard' %}">
-                        <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-                        {% if nav_activas > 0 %}
-                        <span class="badge bg-white text-primary ms-1">{{ nav_activas }}</span>
-                        {% endif %}
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'encomienda_lista' %}active{% endif %}"
-                       href="{% url 'encomienda_lista' %}">
-                        <i class="fas fa-boxes me-1"></i>Encomiendas
-                        {% if nav_retraso > 0 %}
-                        <span class="badge bg-danger ms-1">{{ nav_retraso }}</span>
-                        {% endif %}
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'encomienda_crear' %}active{% endif %}"
-                       href="{% url 'encomienda_crear' %}">
-                        <i class="fas fa-plus me-1"></i>Nueva
-                    </a>
-                </li>
-            </ul>
 
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2"
-                       href="#" role="button" data-bs-toggle="dropdown">
-                        <div class="user-avatar">{{ user.username|first|upper }}</div>
-                        <span>{{ user.username }}</span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <span class="dropdown-item-text text-muted" style="font-size:0.75rem;padding:0.4rem 0.75rem;">
-                                Conectado como <strong>{{ user.username }}</strong>
-                            </span>
-                        </li>
-                        <li><hr class="dropdown-divider my-1"></li>
-                        <li>
-                            <form method="post" action="{% url 'logout' %}">
-                                {% csrf_token %}
-                                <button type="submit" class="dropdown-item text-danger">
-                                    <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
-                                </button>
-                            </form>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
+        <button class="nv-mobile-toggle" onclick="document.querySelector('.nv-main').classList.toggle('open')">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Main Navigation -->
+        <div class="nv-main">
+            <a class="nv-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+               href="{% url 'dashboard' %}" title="Dashboard">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+            <a class="nv-link {% if request.resolver_match.url_name == 'encomienda_lista' %}active{% endif %}"
+               href="{% url 'encomienda_lista' %}" title="Encomiendas">
+                <i class="fas fa-boxes"></i>
+                <span>Encomiendas</span>
+                {% if nav_retraso > 0 %}<span class="badge-pro danger">{{ nav_retraso }}</span>{% endif %}
+            </a>
+            <a class="nv-link {% if request.resolver_match.url_name == 'encomienda_crear' %}active{% endif %}"
+               href="{% url 'encomienda_crear' %}" title="Nueva encomienda">
+                <i class="fas fa-plus"></i>
+                <span>Nueva</span>
+            </a>
+            <a class="nv-link {% if 'cliente' in request.resolver_match.url_name %}active{% endif %}"
+               href="{% url 'cliente_lista' %}" title="Clientes">
+                <i class="fas fa-users"></i>
+                <span>Clientes</span>
+            </a>
+
+            <div class="nv-sep"></div>
+
+            <div class="dropdown">
+                <a class="nv-link {% if 'mapa' in request.resolver_match.url_name or request.resolver_match.url_name == 'reportes' %}active{% endif %}"
+                   href="#" role="button" data-bs-toggle="dropdown" title="Análisis">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Análisis</span>
+                    <i class="fas fa-chevron-down" style="font-size:.6rem;margin-left:.15rem;opacity:.65;"></i>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><span class="dropdown-item-text">Reportes y Mapas</span></li>
+                    <li><a class="dropdown-item" href="{% url 'reportes' %}">
+                        <i class="fas fa-chart-line" style="color:#10b981;width:18px;"></i> Reportes mensuales
+                    </a></li>
+                    <li><a class="dropdown-item" href="{% url 'mapa_envios' %}">
+                        <i class="fas fa-route" style="color:#4f46e5;width:18px;"></i> Envíos activos
+                    </a></li>
+                    <li><a class="dropdown-item" href="{% url 'mapa_heatmap' %}">
+                        <i class="fas fa-fire" style="color:#ef4444;width:18px;"></i> Heatmap geográfico
+                    </a></li>
+                    <li><a class="dropdown-item" href="{% url 'actividad_feed' %}">
+                        <i class="fas fa-stream" style="color:#06b6d4;width:18px;"></i> Feed de actividad
+                    </a></li>
+                </ul>
+            </div>
         </div>
+
+        <!-- Right Actions -->
+        <div class="nv-actions">
+            <!-- 🔍 Búsqueda global -->
+            <button type="button" class="nv-icon-btn" onclick="openGS && openGS()" title="Buscar (Ctrl+K)">
+                <i class="fas fa-search"></i>
+            </button>
+
+            <!-- 🌙 Tema -->
+            <button type="button" class="nv-icon-btn" onclick="toggleTheme()" title="Cambiar tema">
+                <i class="fas fa-moon" id="themeIcon"></i>
+            </button>
+
+            <!-- 🔔 Notificaciones -->
+            <div class="dropdown">
+                <button type="button" class="nv-icon-btn" data-bs-toggle="dropdown" title="Notificaciones">
+                    <i class="far fa-bell"></i>
+                    {% if notif_total > 0 %}<span class="badge-notif">{{ notif_total }}</span>{% endif %}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg" style="min-width:340px;padding:0;overflow:hidden;">
+                    <li>
+                        <div style="padding:.85rem 1.1rem;background:linear-gradient(135deg,#4f46e5,#6366f1);color:#fff;display:flex;justify-content:space-between;align-items:center;">
+                            <strong style="font-size:.85rem;"><i class="fas fa-bell me-2"></i>Notificaciones</strong>
+                            {% if notif_total > 0 %}<span style="background:rgba(255,255,255,.2);font-size:.65rem;font-weight:700;padding:.2rem .55rem;border-radius:10px;">{{ notif_total }} nuevas</span>{% endif %}
+                        </div>
+                    </li>
+                    {% if notif_nuevas_hoy > 0 %}
+                    <li>
+                        <a href="{% url 'encomienda_lista' %}" style="display:flex;align-items:center;gap:.7rem;padding:.7rem 1.1rem;text-decoration:none;color:#0f172a;border-bottom:1px solid #f1f5f9;">
+                            <div style="width:32px;height:32px;border-radius:9px;background:#dcfce7;color:#047857;display:flex;align-items:center;justify-content:center;font-size:.78rem;"><i class="fas fa-plus"></i></div>
+                            <div style="flex:1;">
+                                <div style="font-size:.82rem;font-weight:700;">{{ notif_nuevas_hoy }} registrada{{ notif_nuevas_hoy|pluralize:"s" }} hoy</div>
+                                <div style="font-size:.7rem;color:#94a3b8;">Hace un momento</div>
+                            </div>
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% for enc in notif_retraso_list %}
+                    <li>
+                        <a href="{% url 'encomienda_detalle' enc.pk %}" style="display:flex;align-items:center;gap:.7rem;padding:.7rem 1.1rem;text-decoration:none;color:#0f172a;border-bottom:1px solid #f1f5f9;">
+                            <div style="width:32px;height:32px;border-radius:9px;background:#fee2e2;color:#b91c1c;display:flex;align-items:center;justify-content:center;font-size:.78rem;"><i class="fas fa-exclamation-triangle"></i></div>
+                            <div style="flex:1;min-width:0;">
+                                <div style="font-size:.82rem;font-weight:700;font-family:monospace;">{{ enc.codigo }}</div>
+                                <div style="font-size:.7rem;color:#94a3b8;">Retraso · {{ enc.ruta.origen }} → {{ enc.ruta.destino }}</div>
+                            </div>
+                        </a>
+                    </li>
+                    {% empty %}
+                    {% if notif_nuevas_hoy == 0 %}
+                    <li>
+                        <div style="padding:2rem 1rem;text-align:center;color:#94a3b8;">
+                            <i class="far fa-check-circle" style="font-size:2rem;margin-bottom:.5rem;color:#cbd5e1;"></i>
+                            <div style="font-size:.82rem;font-weight:600;">No hay notificaciones</div>
+                            <div style="font-size:.72rem;">Todo está al día ✨</div>
+                        </div>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- 👤 Usuario -->
+            <div class="dropdown">
+                <button type="button" class="nv-avatar-btn" data-bs-toggle="dropdown">
+                    <div class="nv-avatar-circle">{{ user.username|first|upper }}</div>
+                    <div class="nv-avatar-info">
+                        <span class="nv-avatar-name">{{ user.username }}</span>
+                        {% if user_rol %}<span class="nv-avatar-rol">{{ user_rol }}</span>{% endif %}
+                    </div>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><span class="dropdown-item-text">Mi cuenta</span></li>
+                    <li><a class="dropdown-item d-flex align-items-center justify-content-between" href="{% url 'tareas_lista' %}">
+                        <span><i class="fas fa-tasks" style="color:#8b5cf6;width:18px;"></i> Mis tareas</span>
+                        {% if nav_tareas_pend > 0 %}<span style="background:#8b5cf6;color:#fff;font-size:.6rem;font-weight:700;padding:.1rem .45rem;border-radius:10px;">{{ nav_tareas_pend }}</span>{% endif %}
+                    </a></li>
+                    <li><a class="dropdown-item" href="{% url 'favoritos_lista' %}">
+                        <i class="fas fa-star" style="color:#f59e0b;width:18px;"></i> Favoritos
+                    </a></li>
+                    <li><a class="dropdown-item" href="{% url 'configuracion' %}">
+                        <i class="fas fa-cog" style="color:#64748b;width:18px;"></i> Configuración
+                    </a></li>
+
+                    <li><hr class="dropdown-divider"></li>
+                    <li><span class="dropdown-item-text">Operaciones</span></li>
+                    <li><a class="dropdown-item" href="{% url 'cobros_pendientes' %}">
+                        <i class="fas fa-coins" style="color:#f59e0b;width:18px;"></i> Cobros pendientes
+                    </a></li>
+                    {% if user_rol == 'Admin' or user.is_superuser %}
+                    <li><a class="dropdown-item" href="{% url 'cupones_lista' %}">
+                        <i class="fas fa-ticket-alt" style="color:#ec4899;width:18px;"></i> Cupones
+                    </a></li>
+                    <li><a class="dropdown-item" href="{% url 'backup' %}">
+                        <i class="fas fa-database" style="color:#06b6d4;width:18px;"></i> Backup del sistema
+                    </a></li>
+                    <li><a class="dropdown-item" href="/admin/" target="_blank">
+                        <i class="fas fa-server" style="color:#f97316;width:18px;"></i> Base de Datos (Admin)
+                    </a></li>
+                    {% endif %}
+                    <li><a class="dropdown-item" href="{% url 'status_page' %}" target="_blank">
+                        <i class="fas fa-heartbeat" style="color:#10b981;width:18px;"></i> Status
+                    </a></li>
+
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form method="post" action="{% url 'logout' %}" style="margin:0;">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item text-danger" style="width:100%;background:none;border:none;text-align:left;">
+                                <i class="fas fa-sign-out-alt" style="width:18px;"></i> Cerrar sesión
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
         {% else %}
-        <a href="{% url 'login' %}" class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:white;border:1.5px solid rgba(255,255,255,0.4);">
-            <i class="fas fa-sign-in-alt me-1"></i>Iniciar sesión
-        </a>
+        <div style="margin-left:auto;display:flex;gap:.55rem;align-items:center;">
+            <a href="{% url 'tracking_landing' %}" class="nv-link">
+                <i class="fas fa-search"></i> <span>Rastrear</span>
+            </a>
+            <a href="{% url 'login' %}" style="background:#fff;color:#4f46e5;font-weight:700;padding:.5rem 1.1rem;border-radius:10px;text-decoration:none;font-size:.85rem;display:inline-flex;align-items:center;gap:.4rem;">
+                <i class="fas fa-sign-in-alt"></i> Iniciar sesión
+            </a>
+        </div>
         {% endif %}
     </div>
 </nav>

@@ -1,184 +1,613 @@
 {% extends 'base.html' %}
 {% block title %}{{ encomienda.codigo }} — Detalle{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Layout ── */
+.det-page { max-width: 1180px; margin: 0 auto; }
+
+/* ── Header ── */
+.det-head {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 1rem; margin-bottom: 1.75rem;
+}
+.det-title-block { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.det-icon {
+    width: 56px; height: 56px; border-radius: 14px;
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 1.4rem; flex-shrink: 0;
+    box-shadow: 0 6px 20px rgba(79,70,229,.35);
+}
+.det-code {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 1.35rem; font-weight: 800; color: #0f172a;
+    letter-spacing: .02em;
+}
+.det-sub  { font-size: .8rem; color: #94a3b8; font-weight: 500; margin-top: .15rem; }
+
+.det-actions { display: flex; gap: .55rem; flex-wrap: wrap; }
+.btn-back {
+    display: inline-flex; align-items: center; gap: .45rem;
+    padding: .55rem 1.1rem; border-radius: 10px;
+    border: 1.5px solid #e2e8f0; background: #fff;
+    color: #475569; font-weight: 600; font-size: .82rem;
+    text-decoration: none; transition: all .2s; cursor: pointer;
+}
+.btn-back:hover { border-color: #4f46e5; color: #4f46e5; background: #e0e7ff; }
+.btn-update {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .6rem 1.2rem; border-radius: 10px; border: none;
+    background: linear-gradient(135deg, #4f46e5, #3b82f6);
+    color: #fff; font-weight: 700; font-size: .85rem;
+    cursor: pointer; transition: all .2s;
+    box-shadow: 0 4px 14px rgba(79,70,229,.35);
+}
+.btn-update:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(79,70,229,.45); }
+
+/* ── Status banner ── */
+.status-banner {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 1.1rem 1.5rem; border-radius: 14px;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, #f1f5f9, #fff);
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+.status-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 1rem; flex-shrink: 0;
+}
+.status-banner.PE .status-icon { background: linear-gradient(135deg, #94a3b8, #64748b); }
+.status-banner.TR .status-icon { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.status-banner.DE .status-icon { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.status-banner.EN .status-icon { background: linear-gradient(135deg, #10b981, #059669); }
+.status-banner.DV .status-icon { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+
+.status-info { flex: 1; }
+.status-lbl  { font-size: .68rem; font-weight: 700; color: #94a3b8; letter-spacing: .07em; text-transform: uppercase; }
+.status-val  { font-size: 1.05rem; font-weight: 800; color: #0f172a; margin-top: .15rem; }
+.status-pulse {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #10b981; box-shadow: 0 0 0 0 rgba(16,185,129,.6);
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(16,185,129,.6); }
+    70%  { box-shadow: 0 0 0 10px rgba(16,185,129,0); }
+    100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+}
+
+/* ── Cards ── */
+.card-d {
+    background: #fff; border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    border: 1px solid #e2e8f0;
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+}
+.card-d-head {
+    padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+}
+.card-d-title {
+    margin: 0; font-size: .85rem; font-weight: 700; color: #0f172a;
+    display: flex; align-items: center; gap: .55rem;
+}
+.card-d-title i { color: #4f46e5; font-size: .9rem; }
+.card-d-body { padding: 1.25rem; }
+
+/* ── Person card ── */
+.person-card {
+    background: #f8fafc; border: 1px solid #e2e8f0;
+    border-radius: 12px; padding: 1rem;
+    transition: all .2s;
+}
+.person-card:hover { background: #f1f5f9; border-color: #cbd5e1; }
+.person-lbl {
+    font-size: .65rem; font-weight: 700; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: .07em; margin-bottom: .55rem;
+    display: flex; align-items: center; gap: .35rem;
+}
+.person-row { display: flex; align-items: center; gap: .8rem; }
+.person-av {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: linear-gradient(135deg, #4f46e5, #3b82f6);
+    color: #fff; font-size: .95rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.person-av.dst { background: linear-gradient(135deg, #10b981, #059669); }
+.person-name { font-size: .9rem; font-weight: 700; color: #0f172a; }
+.person-doc  { font-size: .73rem; color: #94a3b8; margin-top: .15rem; display: flex; align-items: center; gap: .3rem; }
+
+/* ── Stats grid ── */
+.stat-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: .9rem;
+    margin-bottom: 1rem;
+}
+.stat-box {
+    padding: .9rem 1rem; border-radius: 10px;
+    background: #f8fafc; border: 1px solid #e2e8f0;
+    border-left: 3px solid var(--bar);
+}
+.stat-box-lbl {
+    font-size: .65rem; font-weight: 700; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: .06em; margin-bottom: .35rem;
+}
+.stat-box-val { font-size: 1rem; font-weight: 800; color: #0f172a; }
+.stat-box-val .arrow { color: #cbd5e1; margin: 0 .35rem; font-size: .75rem; }
+
+/* ── Date row ── */
+.date-row {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    background: #fafbff; border-radius: 10px;
+    border: 1px dashed #cbd5e1;
+    overflow: hidden;
+}
+.date-cell {
+    padding: .9rem 1rem; text-align: center;
+    border-right: 1px dashed #cbd5e1;
+}
+.date-cell:last-child { border-right: none; }
+.date-lbl {
+    font-size: .63rem; font-weight: 700; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: .06em;
+    display: flex; align-items: center; justify-content: center; gap: .3rem;
+    margin-bottom: .35rem;
+}
+.date-val { font-size: .9rem; font-weight: 700; color: #0f172a; }
+
+/* ── Alert retraso ── */
+.alert-retraso {
+    margin-top: 1rem;
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    border: 1.5px solid #fecaca;
+    color: #991b1b;
+    border-radius: 12px; padding: .9rem 1.1rem;
+    display: flex; align-items: center; gap: .85rem;
+}
+.alert-retraso .ar-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: #ef4444; color: #fff;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.alert-retraso h6 { margin: 0; font-size: .82rem; font-weight: 800; }
+.alert-retraso p  { margin: .15rem 0 0; font-size: .77rem; opacity: .85; }
+
+/* ── Sidebar ── */
+.side-emp {
+    text-align: center; padding: 1.25rem 1rem 1rem;
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    color: #fff; position: relative; overflow: hidden;
+}
+.side-emp::before {
+    content: ''; position: absolute; top: -40px; right: -40px;
+    width: 120px; height: 120px; border-radius: 50%;
+    background: rgba(255,255,255,.1);
+}
+.side-emp-av {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: rgba(255,255,255,.18);
+    border: 3px solid rgba(255,255,255,.3);
+    color: #fff; font-size: 1.4rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto .75rem; position: relative; z-index: 1;
+}
+.side-emp-lbl {
+    font-size: .65rem; font-weight: 700; opacity: .8;
+    letter-spacing: .07em; text-transform: uppercase;
+    position: relative; z-index: 1;
+}
+.side-emp-name {
+    font-size: 1rem; font-weight: 800; margin: .25rem 0 .15rem;
+    position: relative; z-index: 1;
+}
+.side-emp-code {
+    font-size: .72rem; opacity: .75;
+    background: rgba(255,255,255,.15); display: inline-block;
+    padding: .15rem .55rem; border-radius: 12px;
+    position: relative; z-index: 1;
+}
+
+.side-info { padding: 1rem 1.25rem; }
+.side-info-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: .55rem 0; border-bottom: 1px dashed #f1f5f9;
+    font-size: .8rem;
+}
+.side-info-row:last-child { border-bottom: none; }
+.side-info-lbl { color: #64748b; display: flex; align-items: center; gap: .4rem; }
+.side-info-lbl i { color: #94a3b8; font-size: .75rem; }
+.side-info-val { font-weight: 700; color: #0f172a; }
+
+.side-desc {
+    margin: 0 1.25rem 1.25rem;
+    background: #f8fafc; border-radius: 10px;
+    padding: .8rem 1rem; border-left: 3px solid #4f46e5;
+}
+.side-desc-lbl {
+    font-size: .65rem; font-weight: 700; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: .06em; margin-bottom: .35rem;
+    display: flex; align-items: center; gap: .35rem;
+}
+.side-desc-txt { font-size: .82rem; color: #0f172a; line-height: 1.5; font-style: italic; }
+
+/* ── Timeline historial ── */
+.timeline { position: relative; padding: 1rem 1.25rem 1.25rem; }
+.timeline::before {
+    content: ''; position: absolute;
+    left: calc(1.25rem + 11px); top: 1rem; bottom: 1.25rem;
+    width: 2px; background: #e2e8f0;
+}
+.tl-item {
+    display: flex; gap: 1rem; margin-bottom: 1.1rem;
+    position: relative;
+}
+.tl-item:last-child { margin-bottom: 0; }
+.tl-dot {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: #4f46e5; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: .65rem; z-index: 1;
+    box-shadow: 0 0 0 4px #fff;
+}
+.tl-content {
+    flex: 1; background: #f8fafc; border: 1px solid #e2e8f0;
+    border-radius: 10px; padding: .75rem 1rem;
+}
+.tl-trans { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin-bottom: .35rem; }
+.tl-meta  { font-size: .72rem; color: #94a3b8; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.tl-obs   { font-size: .8rem; color: #475569; margin-top: .4rem; font-style: italic; }
+
+/* ── Estado pills ── */
+.pill {
+    display: inline-flex; align-items: center; gap: .3rem;
+    padding: .2rem .6rem; border-radius: 12px;
+    font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+}
+.pill-PE { background: #f1f5f9; color: #475569; }
+.pill-TR { background: #dbeafe; color: #1d4ed8; }
+.pill-DE { background: #fef3c7; color: #b45309; }
+.pill-EN { background: #d1fae5; color: #047857; }
+.pill-DV { background: #fee2e2; color: #b91c1c; }
+
+/* ── Empty timeline ── */
+.tl-empty {
+    text-align: center; padding: 2rem 1rem; color: #94a3b8;
+}
+.tl-empty i { font-size: 1.8rem; color: #cbd5e1; margin-bottom: .5rem; }
+.tl-empty p { font-size: .82rem; margin: 0; }
+
+/* ── Modal ── */
+.modal-content { border-radius: 16px !important; border: none !important; box-shadow: 0 20px 60px rgba(0,0,0,.2) !important; }
+.modal-header { border-bottom: 1px solid #f1f5f9; padding: 1.1rem 1.5rem; }
+.modal-title { font-size: 1rem; font-weight: 800; color: #0f172a; }
+.modal-body  { padding: 1.5rem; }
+.modal-footer { border-top: 1px solid #f1f5f9; padding: 1rem 1.5rem; }
+.modal-footer .btn { border-radius: 10px; padding: .55rem 1.1rem; font-size: .85rem; font-weight: 600; }
+
+@media (max-width: 768px) {
+    .stat-row { grid-template-columns: 1fr; }
+    .date-row { grid-template-columns: 1fr; }
+    .date-cell { border-right: none; border-bottom: 1px dashed #cbd5e1; }
+    .date-cell:last-child { border-bottom: none; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="h3 fw-bold text-gradient mb-0">
-        <i class="fas fa-box-open me-2"></i>{{ encomienda.codigo }}
-    </h2>
-    <div>
-        <a href="{% url 'encomienda_lista' %}" class="btn btn-outline-secondary rounded-pill me-2 shadow-sm">
-            <i class="fas fa-arrow-left me-1"></i>Volver
-        </a>
-        {% if not encomienda.esta_entregada %}
-        <button class="btn btn-warning rounded-pill shadow-sm text-dark fw-semibold" data-bs-toggle="modal" data-bs-target="#modalEstado">
-            <i class="fas fa-exchange-alt me-1"></i>Actualizar Estado
-        </button>
-        {% endif %}
-    </div>
-</div>
+<div class="det-page">
 
-<div class="row g-4">
-    <!-- Columna Principal -->
-    <div class="col-lg-8">
-        <!-- Tarjeta de Información Principal -->
-        <div class="card shadow-md border-0 mb-4 overflow-hidden">
-            <div class="card-header bg-white border-bottom-0 pt-4 pb-0 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold text-dark mb-0"><i class="fas fa-info-circle me-2 text-primary"></i>Información del Envío</h5>
-                <span class="badge-estado badge-{{ encomienda.estado }} fs-6">
-                    {% if encomienda.estado == 'TR' %}<i class="fas fa-truck me-1"></i>
-                    {% elif encomienda.estado == 'EN' %}<i class="fas fa-check-circle me-1"></i>
-                    {% elif encomienda.estado == 'PE' %}<i class="fas fa-clock me-1"></i>
-                    {% endif %}
-                    {{ encomienda.get_estado_display }}
-                </span>
-            </div>
-            <div class="card-body p-4">
-                <div class="row mb-4 g-4">
-                    <div class="col-md-6">
-                        <div class="p-3 bg-light rounded">
-                            <p class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Remitente</p>
-                            <div class="d-flex align-items-center">
-                                <span class="avatar-circle me-3">{{ encomienda.remitente.nombres|first|upper }}</span>
-                                <div>
-                                    <h6 class="mb-0 fw-bold">{{ encomienda.remitente.nombre_completo }}</h6>
-                                    <small class="text-muted"><i class="fas fa-id-card me-1"></i>{{ encomienda.remitente.nro_doc }}</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="p-3 bg-light rounded">
-                            <p class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Destinatario</p>
-                            <div class="d-flex align-items-center">
-                                <span class="avatar-circle me-3 bg-secondary">{{ encomienda.destinatario.nombres|first|upper }}</span>
-                                <div>
-                                    <h6 class="mb-0 fw-bold">{{ encomienda.destinatario.nombre_completo }}</h6>
-                                    <small class="text-muted"><i class="fas fa-id-card me-1"></i>{{ encomienda.destinatario.nro_doc }}</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row g-4 mb-4">
-                    <div class="col-sm-4">
-                        <div class="border-start border-4 border-primary ps-3">
-                            <p class="text-muted mb-1 text-xs text-uppercase fw-bold">Ruta</p>
-                            <h6 class="mb-0 fw-semibold">{{ encomienda.ruta.origen }} <i class="fas fa-arrow-right text-muted mx-1 text-xs"></i> {{ encomienda.ruta.destino }}</h6>
-                        </div>
-                    </div>
-                    <div class="col-sm-4">
-                        <div class="border-start border-4 border-info ps-3">
-                            <p class="text-muted mb-1 text-xs text-uppercase fw-bold">Peso</p>
-                            <h6 class="mb-0 fw-semibold">{{ encomienda.peso_kg }} kg</h6>
-                        </div>
-                    </div>
-                    <div class="col-sm-4">
-                        <div class="border-start border-4 border-success ps-3">
-                            <p class="text-muted mb-1 text-xs text-uppercase fw-bold">Costo</p>
-                            <h6 class="mb-0 fw-semibold">S/ {{ encomienda.costo_envio|floatformat:2 }}</h6>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row g-4 bg-light rounded p-2 mx-0">
-                    <div class="col-sm-4 text-center">
-                        <p class="text-muted mb-1 text-xs text-uppercase fw-bold"><i class="fas fa-hourglass-half me-1"></i>Días en tránsito</p>
-                        <h6 class="mb-0">{{ encomienda.dias_en_transito }} días</h6>
-                    </div>
-                    <div class="col-sm-4 text-center border-start border-end">
-                        <p class="text-muted mb-1 text-xs text-uppercase fw-bold"><i class="far fa-calendar-alt me-1"></i>Fecha estimada</p>
-                        <h6 class="mb-0">{{ encomienda.fecha_entrega_est|date:'d/m/Y'|default:'—' }}</h6>
-                    </div>
-                    <div class="col-sm-4 text-center">
-                        <p class="text-muted mb-1 text-xs text-uppercase fw-bold"><i class="far fa-calendar-check me-1"></i>Fecha real</p>
-                        <h6 class="mb-0">{{ encomienda.fecha_entrega_real|date:'d/m/Y'|default:'—' }}</h6>
-                    </div>
-                </div>
-
-                {% if encomienda.tiene_retraso %}
-                <div class="alert alert-danger mt-4 mb-0 border-0 shadow-sm">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
-                        <div>
-                            <h6 class="alert-heading fw-bold mb-1">¡Alerta de Retraso!</h6>
-                            <p class="mb-0 text-sm">Esta encomienda tiene {{ encomienda.dias_en_transito }} días en tránsito y superó la fecha de entrega estimada.</p>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
+    <!-- HEADER -->
+    <div class="det-head">
+        <div class="det-title-block">
+            <div class="det-icon"><i class="fas fa-box"></i></div>
+            <div>
+                <div class="det-code">{{ encomienda.codigo }}</div>
+                <div class="det-sub">Detalle de la encomienda</div>
             </div>
         </div>
+        <div class="det-actions">
+            <button type="button" id="btnFavorito" class="btn-back" title="Marcar como favorita"
+                    style="{% if es_favorita %}background:#fef3c7;border-color:#fcd34d;color:#b45309;{% endif %}">
+                <i class="{% if es_favorita %}fas{% else %}far{% endif %} fa-star" id="favIcon"></i>
+                <span id="favText">{% if es_favorita %}Favorita{% else %}Favorito{% endif %}</span>
+            </button>
+            <a href="{% url 'encomienda_lista' %}" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+            <a href="{% url 'encomienda_editar' encomienda.pk %}" class="btn-back" title="Editar esta encomienda">
+                <i class="fas fa-edit"></i> Editar
+            </a>
+            <button type="button" class="btn-back" id="btnCompartir" title="Copiar link de tracking público">
+                <i class="fas fa-share-alt"></i> Compartir
+            </button>
+            <a href="{% url 'encomienda_ticket' encomienda.pk %}" target="_blank" class="btn-back" title="Imprimir comprobante">
+                <i class="fas fa-print"></i> Ticket
+            </a>
+            <a href="{% url 'encomienda_etiqueta' encomienda.pk %}" target="_blank" class="btn-back" title="Imprimir etiqueta para el paquete">
+                <i class="fas fa-tag"></i> Etiqueta
+            </a>
+            <a href="{% url 'encomienda_duplicar' encomienda.pk %}" class="btn-back" title="Crear nueva con los mismos datos"
+               onclick="return confirm('¿Crear una nueva encomienda con los mismos datos?');">
+                <i class="fas fa-copy"></i> Duplicar
+            </a>
+            <a href="{% url 'tracking_detalle' encomienda.codigo %}" target="_blank" class="btn-back" title="Ver vista del cliente">
+                <i class="fas fa-external-link-alt"></i> Vista cliente
+            </a>
+            {% if not encomienda.esta_entregada %}
+            <button type="button" class="btn-update" data-bs-toggle="modal" data-bs-target="#modalEstado">
+                <i class="fas fa-exchange-alt"></i> Actualizar Estado
+            </button>
+            {% endif %}
+        </div>
+    </div>
 
-        <!-- Tarjeta de Historial -->
-        <div class="card shadow-md border-0 mb-4">
-            <div class="card-header bg-white pt-4 pb-3">
-                <h5 class="fw-bold text-dark mb-0"><i class="fas fa-history me-2 text-primary"></i>Historial de Estados</h5>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0 align-middle border-top-0">
-                        <thead>
-                            <tr>
-                                <th class="ps-4">Fecha</th>
-                                <th>Transición</th>
-                                <th>Empleado</th>
-                                <th class="pe-4">Observación</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for h in historial %}
-                            <tr>
-                                <td class="ps-4 text-muted"><i class="far fa-clock me-1 text-xs"></i>{{ h.fecha_cambio|date:'d/m/Y H:i' }}</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <span class="badge-estado badge-{{ h.estado_anterior }} py-1">{{ h.get_estado_anterior_display }}</span>
-                                        <i class="fas fa-arrow-right text-muted mx-2 text-xs"></i>
-                                        <span class="badge-estado badge-{{ h.estado_nuevo }} py-1">{{ h.get_estado_nuevo_display }}</span>
+    <!-- STATUS BANNER -->
+    <div class="status-banner {{ encomienda.estado }}">
+        <div class="status-icon">
+            {% if encomienda.estado == 'PE' %}<i class="fas fa-clock"></i>
+            {% elif encomienda.estado == 'TR' %}<i class="fas fa-truck"></i>
+            {% elif encomienda.estado == 'DE' %}<i class="fas fa-warehouse"></i>
+            {% elif encomienda.estado == 'EN' %}<i class="fas fa-check-circle"></i>
+            {% elif encomienda.estado == 'DV' %}<i class="fas fa-undo"></i>
+            {% endif %}
+        </div>
+        <div class="status-info">
+            <div class="status-lbl">Estado actual</div>
+            <div class="status-val">{{ encomienda.get_estado_display }}</div>
+        </div>
+        {% if not encomienda.esta_entregada %}<div class="status-pulse"></div>{% endif %}
+    </div>
+
+    {% if encomienda.tags_info %}
+    <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem;">
+        {% for tag in encomienda.tags_info %}
+        <span style="display:inline-flex;align-items:center;gap:.35rem;background:{{ tag.bg }};color:{{ tag.color }};font-size:.72rem;font-weight:700;padding:.3rem .75rem;border-radius:20px;text-transform:uppercase;letter-spacing:.04em;">
+            <i class="fas {{ tag.icon }}"></i> {{ tag.label }}
+        </span>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="row g-3">
+        <!-- COLUMNA IZQUIERDA -->
+        <div class="col-lg-8">
+
+            <!-- Información del envío -->
+            <div class="card-d">
+                <div class="card-d-head">
+                    <h6 class="card-d-title"><i class="fas fa-info-circle"></i> Información del Envío</h6>
+                </div>
+                <div class="card-d-body">
+
+                    <!-- Personas -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <div class="person-card">
+                                <div class="person-lbl"><i class="fas fa-user"></i> Remitente</div>
+                                <div class="person-row">
+                                    <div class="person-av">{{ encomienda.remitente.nombres|first|upper }}</div>
+                                    <div>
+                                        <div class="person-name">{{ encomienda.remitente.nombre_completo }}</div>
+                                        <div class="person-doc"><i class="fas fa-id-card"></i> {{ encomienda.remitente.nro_doc }}</div>
                                     </div>
-                                </td>
-                                <td><span class="fw-medium text-dark">{{ h.empleado.nombres }}</span></td>
-                                <td class="pe-4 text-muted fst-italic">{{ h.observacion|default:'—' }}</td>
-                            </tr>
-                            {% empty %}
-                            <tr><td colspan="4" class="text-center py-4 text-muted">Aún no hay cambios registrados en el historial.</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="person-card">
+                                <div class="person-lbl"><i class="fas fa-user-check"></i> Destinatario</div>
+                                <div class="person-row">
+                                    <div class="person-av dst">{{ encomienda.destinatario.nombres|first|upper }}</div>
+                                    <div>
+                                        <div class="person-name">{{ encomienda.destinatario.nombre_completo }}</div>
+                                        <div class="person-doc"><i class="fas fa-id-card"></i> {{ encomienda.destinatario.nro_doc }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats: ruta, peso, costo -->
+                    <div class="stat-row">
+                        <div class="stat-box" style="--bar:#4f46e5;">
+                            <div class="stat-box-lbl"><i class="fas fa-route"></i> Ruta</div>
+                            <div class="stat-box-val">{{ encomienda.ruta.origen }} <span class="arrow">→</span> {{ encomienda.ruta.destino }}</div>
+                        </div>
+                        <div class="stat-box" style="--bar:#3b82f6;">
+                            <div class="stat-box-lbl"><i class="fas fa-weight-hanging"></i> Peso</div>
+                            <div class="stat-box-val">{{ encomienda.peso_kg }} kg</div>
+                        </div>
+                        <div class="stat-box" style="--bar:#10b981;">
+                            <div class="stat-box-lbl"><i class="fas fa-dollar-sign"></i> Costo</div>
+                            <div class="stat-box-val" style="color:#059669;">S/ {{ encomienda.costo_envio|floatformat:2 }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Fechas -->
+                    <div class="date-row">
+                        <div class="date-cell">
+                            <div class="date-lbl"><i class="fas fa-hourglass-half"></i> Días en tránsito</div>
+                            <div class="date-val">{{ encomienda.dias_en_transito }} días</div>
+                        </div>
+                        <div class="date-cell">
+                            <div class="date-lbl"><i class="far fa-calendar-alt"></i> Fecha estimada</div>
+                            <div class="date-val">{{ encomienda.fecha_entrega_est|date:'d/m/Y'|default:'—' }}</div>
+                        </div>
+                        <div class="date-cell">
+                            <div class="date-lbl"><i class="far fa-calendar-check"></i> Fecha real</div>
+                            <div class="date-val">{{ encomienda.fecha_entrega_real|date:'d/m/Y'|default:'—' }}</div>
+                        </div>
+                    </div>
+
+                    <!-- 💳 Card de pago -->
+                    <div style="margin-top:1rem;padding:1rem 1.25rem;border-radius:12px;background:{% if encomienda.estado_pago == 'PAG' %}linear-gradient(135deg,#d1fae5,#a7f3d0);border:1.5px solid #34d399{% else %}linear-gradient(135deg,#fef3c7,#fde68a);border:1.5px solid #fbbf24{% endif %};">
+                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem;">
+                            <div>
+                                <div style="font-size:.7rem;font-weight:700;color:{% if encomienda.estado_pago == 'PAG' %}#047857{% else %}#92400e{% endif %};text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem;">
+                                    {% if encomienda.estado_pago == 'PAG' %}<i class="fas fa-check-circle"></i> Pago confirmado{% else %}<i class="fas fa-clock"></i> Pago pendiente{% endif %}
+                                </div>
+                                <div style="font-size:1.2rem;font-weight:800;color:#0f172a;">
+                                    S/ {{ encomienda.costo_envio }}
+                                    {% if encomienda.estado_pago == 'PAG' and encomienda.metodo_pago %}
+                                    <span style="font-size:.75rem;font-weight:600;color:#475569;">· {{ encomienda.get_metodo_pago_display }}</span>
+                                    {% endif %}
+                                </div>
+                                {% if encomienda.fecha_pago %}
+                                <div style="font-size:.72rem;color:#475569;margin-top:.15rem;">Pagado el {{ encomienda.fecha_pago|date:'d M Y H:i' }}</div>
+                                {% endif %}
+                            </div>
+                            {% if encomienda.estado_pago != 'PAG' %}
+                            <form method="post" action="{% url 'encomienda_pagar' encomienda.pk %}" style="display:flex;gap:.5rem;align-items:center;">
+                                {% csrf_token %}
+                                <select name="metodo_pago" style="border:1.5px solid #fbbf24;border-radius:8px;padding:.4rem .65rem;font-size:.8rem;background:#fff;">
+                                    <option value="EFE">💵 Efectivo</option>
+                                    <option value="YAP">💜 Yape</option>
+                                    <option value="PLI">💙 Plin</option>
+                                    <option value="TRF">🏦 Transferencia</option>
+                                    <option value="TAR">💳 Tarjeta</option>
+                                    <option value="CTR">📦 Contra entrega</option>
+                                </select>
+                                <button type="submit" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:8px;padding:.5rem 1.1rem;font-size:.78rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:.35rem;">
+                                    <i class="fas fa-check"></i> Marcar pagado
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if encomienda.tiene_retraso %}
+                    <div class="alert-retraso">
+                        <div class="ar-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div>
+                            <h6>¡Alerta de retraso!</h6>
+                            <p>Lleva {{ encomienda.dias_en_transito }} días en tránsito y superó la fecha estimada.</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 💬 COMENTARIOS INTERNOS -->
+            <div class="card-d">
+                <div class="card-d-head">
+                    <h6 class="card-d-title"><i class="fas fa-comments"></i> Comentarios internos</h6>
+                    <span style="font-size:.7rem;color:#94a3b8;font-weight:600;">{{ comentarios|length }} {{ comentarios|length|pluralize:"comentario,comentarios" }}</span>
+                </div>
+                <div style="padding:1rem 1.25rem;">
+                    <form method="post" action="{% url 'encomienda_comentar' encomienda.pk %}" style="margin-bottom:1rem;">
+                        {% csrf_token %}
+                        <textarea name="contenido" placeholder="Escribe una nota interna (no visible para el cliente)..." rows="2" required
+                                  style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:.65rem .9rem;font-size:.85rem;font-family:inherit;outline:none;resize:vertical;"></textarea>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.65rem;">
+                            <label style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:#475569;cursor:pointer;">
+                                <input type="checkbox" name="importante" style="cursor:pointer;">
+                                <i class="fas fa-exclamation-circle" style="color:#f59e0b;"></i> Marcar como importante
+                            </label>
+                            <button type="submit" style="background:linear-gradient(135deg,#4f46e5,#6366f1);color:#fff;border:none;border-radius:8px;padding:.5rem 1.1rem;font-size:.8rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;">
+                                <i class="fas fa-paper-plane"></i> Comentar
+                            </button>
+                        </div>
+                    </form>
+
+                    {% for c in comentarios %}
+                    <div style="display:flex;gap:.75rem;padding:.85rem;background:{% if c.importante %}#fffbeb{% else %}#f8fafc{% endif %};border-radius:10px;border:1px solid {% if c.importante %}#fcd34d{% else %}#e2e8f0{% endif %};margin-bottom:.6rem;">
+                        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#3b82f6);color:#fff;font-size:.78rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            {{ c.empleado.nombres|first|upper }}
+                        </div>
+                        <div style="flex:1;min-width:0;">
+                            <div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.2rem;flex-wrap:wrap;">
+                                <strong style="font-size:.82rem;color:#0f172a;">{{ c.empleado.nombres }} {{ c.empleado.apellidos }}</strong>
+                                {% if c.importante %}<span style="background:#fef3c7;color:#b45309;font-size:.6rem;font-weight:700;padding:.1rem .45rem;border-radius:10px;text-transform:uppercase;letter-spacing:.04em;"><i class="fas fa-star"></i> Importante</span>{% endif %}
+                                <span style="font-size:.7rem;color:#94a3b8;margin-left:auto;">{{ c.fecha|date:'d/m/Y H:i' }}</span>
+                            </div>
+                            <div style="font-size:.85rem;color:#475569;white-space:pre-wrap;line-height:1.45;">{{ c.contenido }}</div>
+                            <a href="{% url 'comentario_eliminar' c.pk %}" onclick="return confirm('¿Eliminar este comentario?')" style="font-size:.7rem;color:#ef4444;text-decoration:none;margin-top:.3rem;display:inline-block;">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div style="text-align:center;padding:1.5rem;color:#94a3b8;font-size:.82rem;">
+                        <i class="far fa-comment" style="font-size:1.6rem;color:#cbd5e1;margin-bottom:.4rem;display:block;"></i>
+                        Aún no hay comentarios internos
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- HISTORIAL -->
+            <div class="card-d">
+                <div class="card-d-head">
+                    <h6 class="card-d-title"><i class="fas fa-history"></i> Historial de Estados</h6>
+                    <span style="font-size:.72rem;color:#94a3b8;font-weight:600;">{{ historial|length }} registro{{ historial|length|pluralize:"s" }}</span>
+                </div>
+                <div class="timeline">
+                    {% for h in historial %}
+                    <div class="tl-item">
+                        <div class="tl-dot"><i class="fas fa-check" style="font-size:.55rem;"></i></div>
+                        <div class="tl-content">
+                            <div class="tl-trans">
+                                <span class="pill pill-{{ h.estado_anterior }}">{{ h.get_estado_anterior_display }}</span>
+                                <i class="fas fa-arrow-right" style="color:#cbd5e1;font-size:.7rem;"></i>
+                                <span class="pill pill-{{ h.estado_nuevo }}">{{ h.get_estado_nuevo_display }}</span>
+                            </div>
+                            <div class="tl-meta">
+                                <span><i class="far fa-clock"></i> {{ h.fecha_cambio|date:'d/m/Y H:i' }}</span>
+                                <span>·</span>
+                                <span><i class="fas fa-user-tie"></i> {{ h.empleado.nombres }} {{ h.empleado.apellidos }}</span>
+                            </div>
+                            {% if h.observacion %}
+                            <div class="tl-obs">"{{ h.observacion }}"</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="tl-empty">
+                        <i class="far fa-clock"></i>
+                        <p>Aún no hay cambios registrados en el historial.</p>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Columna Lateral -->
-    <div class="col-lg-4">
-        <div class="card shadow-md border-0 mb-4 position-sticky" style="top: 2rem;">
-            <div class="card-body p-4">
-                <div class="text-center mb-4">
-                    <div class="avatar-circle mb-3 mx-auto" style="width: 64px; height: 64px; font-size: 1.5rem; background-color: #6b7280;">
-                        <i class="fas fa-user-tie"></i>
+        <!-- COLUMNA DERECHA (sidebar) -->
+        <div class="col-lg-4">
+            <div class="card-d">
+                <div class="side-emp">
+                    <div class="side-emp-av">{{ encomienda.empleado_registro.nombres|first|upper }}</div>
+                    <div class="side-emp-lbl">Registrado por</div>
+                    <div class="side-emp-name">{{ encomienda.empleado_registro.nombres }} {{ encomienda.empleado_registro.apellidos }}</div>
+                    <div class="side-emp-code">{{ encomienda.empleado_registro.codigo }}</div>
+                </div>
+                <div class="side-info">
+                    <div class="side-info-row">
+                        <span class="side-info-lbl"><i class="far fa-calendar-plus"></i> Fecha</span>
+                        <span class="side-info-val">{{ encomienda.fecha_registro|date:'d/m/Y' }}</span>
                     </div>
-                    <h6 class="text-uppercase text-muted fw-bold text-xs mb-1">Registrado por</h6>
-                    <h5 class="fw-bold mb-0">{{ encomienda.empleado_registro.nombres }} {{ encomienda.empleado_registro.apellidos }}</h5>
-                    <p class="text-muted text-sm">{{ encomienda.empleado_registro.codigo }}</p>
+                    <div class="side-info-row">
+                        <span class="side-info-lbl"><i class="far fa-clock"></i> Hora</span>
+                        <span class="side-info-val">{{ encomienda.fecha_registro|date:'H:i' }}</span>
+                    </div>
+                    <div class="side-info-row">
+                        <span class="side-info-lbl"><i class="fas fa-envelope"></i> Email</span>
+                        <span class="side-info-val" style="font-size:.72rem;">{{ encomienda.empleado_registro.email|truncatechars:24 }}</span>
+                    </div>
                 </div>
-                
-                <hr class="text-muted opacity-25">
-                
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="text-muted text-sm"><i class="far fa-calendar-plus me-2"></i>Fecha de registro:</span>
-                    <span class="fw-semibold">{{ encomienda.fecha_registro|date:'d/m/Y' }}</span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="text-muted text-sm"><i class="far fa-clock me-2"></i>Hora de registro:</span>
-                    <span class="fw-semibold">{{ encomienda.fecha_registro|date:'H:i' }}</span>
-                </div>
-                
                 {% if encomienda.descripcion %}
-                <hr class="text-muted opacity-25">
-                <div class="mt-3">
-                    <span class="text-muted text-sm d-block mb-2"><i class="fas fa-box-open me-2"></i>Descripción del paquete:</span>
-                    <p class="bg-light p-3 rounded text-sm mb-0 fst-italic">"{{ encomienda.descripcion }}"</p>
+                <div class="side-desc">
+                    <div class="side-desc-lbl"><i class="fas fa-box-open"></i> Descripción del paquete</div>
+                    <div class="side-desc-txt">"{{ encomienda.descripcion }}"</div>
+                </div>
+                {% endif %}
+                {% if encomienda.observaciones %}
+                <div class="side-desc" style="border-left-color:#f59e0b;background:#fffbeb;">
+                    <div class="side-desc-lbl"><i class="fas fa-sticky-note"></i> Observaciones</div>
+                    <div class="side-desc-txt">{{ encomienda.observaciones }}</div>
                 </div>
                 {% endif %}
             </div>
@@ -186,26 +615,98 @@
     </div>
 </div>
 
+<!-- 🎉 Confetti canvas (cuando se entrega) -->
+{% if encomienda.estado == 'EN' %}
+<canvas id="confettiCanvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:2000;"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+<script>
+    // Solo lanzar confetti la primera vez que se ve este estado
+    const confettiKey = 'confetti_seen_{{ encomienda.codigo }}';
+    if (!sessionStorage.getItem(confettiKey)) {
+        sessionStorage.setItem(confettiKey, '1');
+        setTimeout(() => {
+            const duration = 2 * 1000;
+            const end = Date.now() + duration;
+            (function frame() {
+                confetti({ particleCount: 4, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#4f46e5','#10b981','#f59e0b','#3b82f6','#ef4444'] });
+                confetti({ particleCount: 4, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#4f46e5','#10b981','#f59e0b','#3b82f6','#ef4444'] });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            })();
+        }, 400);
+    }
+</script>
+{% endif %}
+
+<!-- Toast de copia -->
+<div id="copyToast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:.65rem 1.2rem;border-radius:10px;font-size:.85rem;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;transition:opacity .25s;z-index:1100;pointer-events:none;">
+    <i class="fas fa-check" style="color:#10b981;"></i> Link copiado al portapapeles
+</div>
+
+<script>
+// ⭐ Toggle favorito
+document.getElementById('btnFavorito')?.addEventListener('click', async () => {
+    const btn = document.getElementById('btnFavorito');
+    const icon = document.getElementById('favIcon');
+    const text = document.getElementById('favText');
+    try {
+        const r = await fetch(`/encomiendas/{{ encomienda.pk }}/favorito/`, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
+        const data = await r.json();
+        if (data.favorita) {
+            btn.style.background = '#fef3c7';
+            btn.style.borderColor = '#fcd34d';
+            btn.style.color = '#b45309';
+            icon.className = 'fas fa-star';
+            text.textContent = 'Favorita';
+        } else {
+            btn.style.background = '';
+            btn.style.borderColor = '';
+            btn.style.color = '';
+            icon.className = 'far fa-star';
+            text.textContent = 'Favorito';
+        }
+    } catch (err) { console.warn(err); }
+});
+
+document.getElementById('btnCompartir')?.addEventListener('click', async () => {
+    const url = `${window.location.origin}/track/{{ encomienda.codigo }}/`;
+    try {
+        await navigator.clipboard.writeText(url);
+        const toast = document.getElementById('copyToast');
+        toast.style.opacity = '1';
+        setTimeout(() => toast.style.opacity = '0', 2000);
+    } catch (err) {
+        prompt('Copia este link y envíalo al cliente:', url);
+    }
+});
+</script>
+
+<!-- ── Modal Cambiar Estado ── -->
 {% if not encomienda.esta_entregada %}
-<!-- Modal para Cambiar Estado -->
-<div class="modal fade" id="modalEstado" tabindex="-1" aria-labelledby="modalEstadoLabel" aria-hidden="true">
+<div class="modal fade" id="modalEstado" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-lg);">
-            <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
-                <h5 class="modal-title fw-bold" id="modalEstadoLabel"><i class="fas fa-exchange-alt text-warning me-2"></i>Actualizar Estado</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-exchange-alt me-2" style="color:#4f46e5;"></i> Actualizar Estado</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="post" action="{% url 'encomienda_cambiar_estado' encomienda.pk %}">
                 {% csrf_token %}
-                <div class="modal-body px-4 py-4">
-                    <div class="bg-light p-3 rounded mb-4 text-center">
-                        <span class="text-muted text-sm d-block mb-1">Estado actual:</span>
-                        <span class="badge-estado badge-{{ encomienda.estado }} fs-6">{{ encomienda.get_estado_display }}</span>
+                <div class="modal-body">
+                    <div style="background:#f8fafc;border:1px dashed #cbd5e1;border-radius:10px;padding:.85rem 1rem;margin-bottom:1.1rem;text-align:center;">
+                        <div style="font-size:.65rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.4rem;">Estado actual</div>
+                        <span class="pill pill-{{ encomienda.estado }}" style="font-size:.78rem;padding:.3rem .85rem;">{{ encomienda.get_estado_display }}</span>
                     </div>
-                    
-                    <div class="mb-4">
-                        <label class="form-label fw-semibold">Seleccionar nuevo estado</label>
-                        <select name="estado" class="form-select form-select-lg">
+
+                    <div class="mb-3">
+                        <label style="display:block;font-size:.78rem;font-weight:700;color:#374151;margin-bottom:.45rem;">Nuevo estado</label>
+                        <select name="estado" class="form-select" required style="border-radius:10px;border:1.5px solid #e2e8f0;padding:.6rem .9rem;">
                             {% for valor, etiqueta in estados %}
                                 {% if valor != encomienda.estado %}
                                 <option value="{{ valor }}">{{ etiqueta }}</option>
@@ -213,14 +714,14 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="mb-2">
-                        <label class="form-label fw-semibold">Observación (Opcional)</label>
-                        <textarea name="observacion" class="form-control" rows="3" placeholder="Motivo del cambio, persona que recibe, etc..."></textarea>
+                    <div>
+                        <label style="display:block;font-size:.78rem;font-weight:700;color:#374151;margin-bottom:.45rem;">Observación (opcional)</label>
+                        <textarea name="observacion" class="form-control" rows="3" placeholder="Motivo del cambio, persona que recibe, etc..." style="border-radius:10px;border:1.5px solid #e2e8f0;padding:.6rem .9rem;font-size:.85rem;"></textarea>
                     </div>
                 </div>
-                <div class="modal-footer border-top-0 pt-0 pb-4 px-4">
-                    <button type="button" class="btn btn-light fw-medium" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-warning fw-bold px-4 shadow-sm text-dark">Guardar Cambios</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn-update"><i class="fas fa-save"></i> Guardar cambio</button>
                 </div>
             </form>
         </div>

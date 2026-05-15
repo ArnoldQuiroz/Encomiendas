@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% block title %}Heatmap geográfico{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+.hm-page { max-width: 1200px; margin: 0 auto; }
+.hm-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; }
+.hm-title { display:flex; align-items:center; gap:.85rem; }
+.hm-icon {
+    width:48px; height:48px; border-radius:13px;
+    background: linear-gradient(135deg, #ef4444, #f59e0b);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; color: #fff;
+    box-shadow: 0 5px 16px rgba(239,68,68,.35);
+}
+.hm-title h2 { font-size: 1.25rem; font-weight: 800; margin: 0; }
+.hm-title p { font-size: .8rem; color: #94a3b8; margin: .15rem 0 0; }
+
+.hm-grid { display: grid; grid-template-columns: 1fr 320px; gap: 1.25rem; }
+
+.hm-mapa-wrap {
+    background: #fff; border-radius: 14px;
+    box-shadow: 0 4px 22px rgba(0,0,0,.06);
+    border: 1px solid #e2e8f0; overflow: hidden;
+}
+#hm-mapa { height: 70vh; min-height: 540px; z-index: 0; }
+
+.hm-side { display: flex; flex-direction: column; gap: 1rem; }
+
+.hm-card {
+    background: #fff; border-radius: 14px; padding: 1.25rem;
+    box-shadow: 0 4px 14px rgba(0,0,0,.05); border: 1px solid #e2e8f0;
+}
+.hm-card h6 {
+    font-size: .82rem; font-weight: 700; color: #0f172a; margin: 0 0 .85rem;
+    display: flex; align-items: center; gap: .5rem;
+}
+.hm-card h6 i { color: #ef4444; }
+
+.hm-total {
+    background: linear-gradient(135deg, #ef4444, #f59e0b);
+    color: #fff; border-radius: 14px; padding: 1.4rem;
+    text-align: center;
+}
+.hm-total-num { font-size: 2.5rem; font-weight: 900; line-height: 1; }
+.hm-total-lbl { font-size: .7rem; font-weight: 700; opacity: .9; text-transform: uppercase; letter-spacing: .07em; margin-top: .35rem; }
+
+.hm-city-row {
+    display: flex; align-items: center; gap: .65rem;
+    padding: .6rem .25rem; border-bottom: 1px dashed #f1f5f9;
+}
+.hm-city-row:last-child { border-bottom: none; }
+.hm-city-rank {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #f1f5f9; color: #64748b;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .72rem; font-weight: 800; flex-shrink: 0;
+}
+.hm-city-rank.r1 { background: linear-gradient(135deg,#fbbf24,#d97706); color:#fff; }
+.hm-city-rank.r2 { background: linear-gradient(135deg,#cbd5e1,#94a3b8); color:#fff; }
+.hm-city-rank.r3 { background: linear-gradient(135deg,#fb923c,#c2410c); color:#fff; }
+.hm-city-info { flex: 1; min-width: 0; }
+.hm-city-name { font-size: .85rem; font-weight: 700; color: #0f172a; line-height: 1.2; }
+.hm-city-detail { font-size: .7rem; color: #64748b; margin-top: .15rem; }
+.hm-city-num { font-size: 1.1rem; font-weight: 800; color: #ef4444; }
+
+.leyenda { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9; background: #f8fafc; }
+.leyenda-item { font-size: .72rem; color: #475569; display: flex; align-items: center; gap: .35rem; }
+
+@media (max-width: 1024px) { .hm-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hm-page">
+    <div class="hm-head">
+        <div class="hm-title">
+            <div class="hm-icon"><i class="fas fa-fire"></i></div>
+            <div>
+                <h2>Heatmap Geográfico</h2>
+                <p>Concentración de envíos por ciudad — burbujas más grandes = mayor volumen</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="hm-grid">
+        <div class="hm-mapa-wrap">
+            <div class="leyenda">
+                <span class="leyenda-item">📊 <strong>Tamaño:</strong> volumen total</span>
+                <span class="leyenda-item">🟢 Origen</span>
+                <span class="leyenda-item">🔴 Destino</span>
+                <span class="leyenda-item">🟠 Mixto (origen + destino)</span>
+            </div>
+            <div id="hm-mapa"></div>
+        </div>
+
+        <div class="hm-side">
+            <div class="hm-total">
+                <div class="hm-total-num">{{ total }}</div>
+                <div class="hm-total-lbl">Total de movimientos</div>
+            </div>
+
+            <div class="hm-card">
+                <h6><i class="fas fa-trophy"></i> Top 5 ciudades</h6>
+                {% for c in top_ciudades %}
+                <div class="hm-city-row">
+                    <div class="hm-city-rank {% if forloop.counter == 1 %}r1{% elif forloop.counter == 2 %}r2{% elif forloop.counter == 3 %}r3{% endif %}">
+                        {{ forloop.counter }}
+                    </div>
+                    <div class="hm-city-info">
+                        <div class="hm-city-name">{{ c.nombre }}</div>
+                        <div class="hm-city-detail">
+                            📤 {{ c.origen }} envíos · 📥 {{ c.destino }} llegadas
+                        </div>
+                    </div>
+                    <div class="hm-city-num">{{ c.total }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="hm-card" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-color:#86efac;">
+                <h6 style="color:#047857;"><i class="fas fa-lightbulb" style="color:#10b981;"></i> Insight</h6>
+                <p style="font-size:.82rem;color:#065f46;margin:0;line-height:1.5;">
+                    Las ciudades con más volumen son <strong>oportunidades de negocio</strong>.
+                    Considera abrir puntos de recolección en las top 3.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const ciudades = {{ ciudades_json|safe }};
+const maxTotal = Math.max(...ciudades.map(c => c.total), 1);
+
+const map = L.map('hm-mapa', { scrollWheelZoom: true }).setView([-9.19, -75.01], 5.5);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap',
+}).addTo(map);
+
+ciudades.forEach(c => {
+    // Color según predominio: si más destino → rojo, si más origen → verde, si parejo → naranja
+    let color;
+    const ratio = c.origen / Math.max(c.total, 1);
+    if (ratio > 0.65) color = '#10b981';       // verde: principalmente origen
+    else if (ratio < 0.35) color = '#ef4444';  // rojo: principalmente destino
+    else color = '#f59e0b';                    // naranja: mixto
+
+    const radius = 15 + (c.total / maxTotal) * 60;  // 15px-75px según volumen
+
+    // Círculo de calor (anillo exterior)
+    L.circleMarker(c.coord, {
+        radius: radius,
+        fillColor: color,
+        fillOpacity: 0.25,
+        color: color,
+        weight: 2,
+        opacity: 0.5,
+    }).addTo(map);
+
+    // Punto central con número
+    const dotSize = Math.min(28 + (c.total / maxTotal) * 22, 50);
+    const dotIcon = L.divIcon({
+        html: `<div style="background:${color};width:${dotSize}px;height:${dotSize}px;border-radius:50%;border:3px solid #fff;box-shadow:0 4px 14px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:${Math.min(11 + dotSize/8, 16)}px;">${c.total}</div>`,
+        className: '',
+        iconSize: [dotSize, dotSize],
+        iconAnchor: [dotSize/2, dotSize/2],
+    });
+
+    L.marker(c.coord, { icon: dotIcon }).addTo(map).bindPopup(`
+        <div style="min-width:180px;">
+            <strong style="font-size:.95rem;color:${color};">${c.nombre}</strong>
+            <hr style="margin:.4rem 0;border:none;border-top:1px dashed #cbd5e1;">
+            <div style="font-size:.78rem;color:#475569;">
+                📤 <strong>${c.origen}</strong> como origen<br>
+                📥 <strong>${c.destino}</strong> como destino<br>
+                📊 <strong>${c.total}</strong> movimientos en total
+            </div>
+        </div>
+    `);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+{% block title %}Importar Clientes{% endblock %}
+
+{% block extra_css %}
+<style>
+.imp-page { max-width: 800px; margin: 0 auto; }
+
+.imp-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem; }
+.imp-title { display:flex; align-items:center; gap:.85rem; }
+.imp-icon {
+    width: 48px; height: 48px; border-radius: 13px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem; color: #fff;
+    box-shadow: 0 5px 16px rgba(245,158,11,.35);
+}
+.imp-title h2 { font-size: 1.25rem; font-weight: 800; margin: 0; }
+.imp-title p { font-size: .8rem; color: #94a3b8; margin: .15rem 0 0; }
+
+.btn-back {
+    display: inline-flex; align-items: center; gap: .45rem;
+    padding: .5rem 1rem; border-radius: 10px;
+    border: 1.5px solid #e2e8f0; background: #fff;
+    color: #475569; font-weight: 600; font-size: .82rem;
+    text-decoration: none; transition: all .2s;
+}
+.btn-back:hover { border-color: #4f46e5; color: #4f46e5; }
+
+.card-imp {
+    background: #fff; border-radius: 16px; padding: 2rem;
+    box-shadow: 0 4px 22px rgba(0,0,0,.06);
+    border: 1px solid #e2e8f0; margin-bottom: 1.25rem;
+}
+
+.upload-area {
+    border: 2.5px dashed #cbd5e1; border-radius: 14px;
+    padding: 2.5rem 1.5rem; text-align: center;
+    transition: all .2s; cursor: pointer;
+    background: #fafbff;
+}
+.upload-area:hover, .upload-area.dragging {
+    border-color: #4f46e5; background: #f0f0ff;
+}
+.upload-area .upload-icon {
+    width: 64px; height: 64px; border-radius: 16px;
+    background: linear-gradient(135deg,#4f46e5,#6366f1);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; margin: 0 auto 1rem;
+    box-shadow: 0 6px 20px rgba(79,70,229,.35);
+}
+.upload-area h6 { font-size: 1rem; font-weight: 800; color: #0f172a; margin: 0 0 .35rem; }
+.upload-area p { font-size: .85rem; color: #64748b; margin: 0 0 1rem; }
+.upload-area input[type="file"] { display: none; }
+.upload-btn {
+    background: linear-gradient(135deg, #4f46e5, #3b82f6);
+    color: #fff; border: none; padding: .65rem 1.4rem;
+    border-radius: 10px; font-weight: 700; font-size: .85rem;
+    cursor: pointer; display: inline-flex; align-items: center; gap: .45rem;
+    box-shadow: 0 4px 14px rgba(79,70,229,.35);
+}
+.file-info { margin-top: 1rem; font-size: .82rem; color: #475569; }
+.file-info strong { color: #4f46e5; }
+
+.btn-submit {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff; border: none; padding: .75rem 1.6rem;
+    border-radius: 10px; font-weight: 700; font-size: .9rem;
+    cursor: pointer; display: inline-flex; align-items: center; gap: .5rem;
+    box-shadow: 0 4px 14px rgba(16,185,129,.35);
+    margin-top: 1rem; width: 100%; justify-content: center;
+}
+.btn-submit:hover { transform: translateY(-2px); }
+
+/* Resultados */
+.results {
+    margin-top: 1.5rem;
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border: 1.5px solid #86efac; border-radius: 14px;
+    padding: 1.5rem;
+}
+.results h6 { font-size: .95rem; font-weight: 800; color: #047857; margin: 0 0 1rem; }
+.result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .85rem; }
+.result-stat { background: #fff; border-radius: 10px; padding: .85rem; text-align: center; border: 1px solid #d1fae5; }
+.result-stat-num { font-size: 1.8rem; font-weight: 900; line-height: 1; }
+.result-stat-lbl { font-size: .68rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .06em; margin-top: .35rem; }
+
+.errors-box {
+    background: #fef2f2; border: 1.5px solid #fca5a5; border-radius: 10px;
+    padding: 1rem; margin-top: 1rem; font-size: .8rem;
+}
+.errors-box h6 { color: #b91c1c; font-size: .85rem; margin: 0 0 .5rem; }
+.errors-box ul { margin: 0; padding-left: 1.25rem; color: #991b1b; }
+
+/* Tabla guía */
+.guia-tabla {
+    width: 100%; border-collapse: collapse; margin-top: .85rem;
+    font-size: .8rem; background: #f8fafc; border-radius: 8px; overflow: hidden;
+}
+.guia-tabla th { background: #4f46e5; color: #fff; padding: .55rem .85rem; text-align: left; font-size: .7rem; }
+.guia-tabla td { padding: .5rem .85rem; border-bottom: 1px solid #e2e8f0; color: #475569; }
+.guia-tabla td.req { color: #b91c1c; font-weight: 700; }
+.guia-tabla td.opt { color: #64748b; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="imp-page">
+    <div class="imp-head">
+        <div class="imp-title">
+            <div class="imp-icon"><i class="fas fa-file-upload"></i></div>
+            <div>
+                <h2>Importar Clientes</h2>
+                <p>Carga masiva desde un archivo CSV</p>
+            </div>
+        </div>
+        <a href="{% url 'cliente_lista' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="card-imp">
+        <form method="post" enctype="multipart/form-data" id="importForm">
+            {% csrf_token %}
+            <label class="upload-area" id="uploadArea">
+                <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                <h6>Arrastra el archivo o haz clic para seleccionar</h6>
+                <p>Formato: CSV en UTF-8 (puedes exportarlo desde Excel)</p>
+                <input type="file" name="archivo" id="fileInput" accept=".csv,text/csv" required>
+                <button type="button" class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-folder-open"></i> Seleccionar archivo
+                </button>
+                <div class="file-info" id="fileInfo"></div>
+            </label>
+            <button type="submit" class="btn-submit" id="submitBtn" style="display:none;">
+                <i class="fas fa-rocket"></i> Importar clientes
+            </button>
+        </form>
+
+        {% if resultados %}
+        <div class="results">
+            <h6><i class="fas fa-check-circle"></i> Resultado de la importación</h6>
+            <div class="result-grid">
+                <div class="result-stat">
+                    <div class="result-stat-num" style="color:#10b981;">{{ resultados.creados }}</div>
+                    <div class="result-stat-lbl">Nuevos</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-num" style="color:#3b82f6;">{{ resultados.actualizados }}</div>
+                    <div class="result-stat-lbl">Actualizados</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-num" style="color:#ef4444;">{{ resultados.omitidos }}</div>
+                    <div class="result-stat-lbl">Omitidos</div>
+                </div>
+            </div>
+            {% if resultados.errores %}
+            <div class="errors-box">
+                <h6><i class="fas fa-exclamation-triangle"></i> Primeros errores (total: {{ resultados.total_errores }})</h6>
+                <ul>
+                    {% for err in resultados.errores %}<li>{{ err }}</li>{% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Guía -->
+    <div class="card-imp" style="padding:1.5rem;">
+        <h6 style="font-size:.95rem;font-weight:800;color:#0f172a;margin:0 0 .5rem;display:flex;align-items:center;gap:.5rem;">
+            <i class="fas fa-info-circle" style="color:#4f46e5;"></i> Formato esperado del CSV
+        </h6>
+        <p style="font-size:.82rem;color:#64748b;margin:0 0 .5rem;">
+            La primera fila debe ser el encabezado con los nombres de las columnas:
+        </p>
+        <table class="guia-tabla">
+            <thead>
+                <tr><th>Columna</th><th>Obligatorio</th><th>Ejemplo</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>nro_doc</code></td><td class="req">Sí</td><td>72927772</td></tr>
+                <tr><td><code>nombres</code></td><td class="req">Sí</td><td>Arnold Braian</td></tr>
+                <tr><td><code>apellidos</code></td><td class="req">Sí</td><td>Mejia Quiroz</td></tr>
+                <tr><td><code>tipo_doc</code></td><td class="opt">No (default DNI)</td><td>DNI / RUC / PAS</td></tr>
+                <tr><td><code>telefono</code></td><td class="opt">No</td><td>987654321</td></tr>
+                <tr><td><code>email</code></td><td class="opt">No</td><td>cliente@email.com</td></tr>
+                <tr><td><code>direccion</code></td><td class="opt">No</td><td>Av. Lima 123, Miraflores</td></tr>
+            </tbody>
+        </table>
+        <p style="font-size:.78rem;color:#94a3b8;margin-top:.85rem;">
+            💡 Tip: Si el DNI ya existe, el cliente se <strong>actualiza</strong> en lugar de crear duplicado.
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const fileInput = document.getElementById('fileInput');
+const fileInfo = document.getElementById('fileInfo');
+const submitBtn = document.getElementById('submitBtn');
+const uploadArea = document.getElementById('uploadArea');
+
+fileInput.addEventListener('change', (e) => {
+    const f = e.target.files[0];
+    if (f) {
+        fileInfo.innerHTML = `<i class="fas fa-file-csv" style="color:#4f46e5;"></i> <strong>${f.name}</strong> (${(f.size/1024).toFixed(1)} KB)`;
+        submitBtn.style.display = 'inline-flex';
+    }
+});
+
+// Drag & drop
+['dragenter','dragover'].forEach(ev => uploadArea.addEventListener(ev, (e) => {
+    e.preventDefault(); uploadArea.classList.add('dragging');
+}));
+['dragleave','drop'].forEach(ev => uploadArea.addEventListener(ev, (e) => {
+    e.preventDefault(); uploadArea.classList.remove('dragging');
+}));
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const f = e.dataTransfer.files[0];
+    if (f) {
+        fileInput.files = e.dataTransfer.files;
+        fileInput.dispatchEvent(new Event('change'));
+    }
+});
+</script>
+{% endblock %}

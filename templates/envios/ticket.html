@@ -1,0 +1,326 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Ticket {{ encomienda.codigo }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; padding: 2rem;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #f1f5f9; color: #0f172a;
+        }
+        .toolbar {
+            max-width: 800px; margin: 0 auto 1.5rem;
+            display: flex; justify-content: space-between; align-items: center;
+            gap: .65rem; flex-wrap: wrap;
+        }
+        .toolbar h1 {
+            font-size: 1.1rem; font-weight: 800; margin: 0;
+            display: flex; align-items: center; gap: .55rem;
+            color: #475569;
+        }
+        .btn {
+            display: inline-flex; align-items: center; gap: .5rem;
+            padding: .6rem 1.2rem; border-radius: 10px;
+            font-weight: 700; font-size: .85rem;
+            text-decoration: none; cursor: pointer; border: none;
+            transition: all .2s;
+        }
+        .btn-print { background: #4f46e5; color: #fff; box-shadow: 0 4px 14px rgba(79,70,229,.35); }
+        .btn-print:hover { transform: translateY(-2px); }
+        .btn-back { background: #fff; color: #475569; border: 1.5px solid #e2e8f0; }
+        .btn-back:hover { border-color: #ef4444; color: #ef4444; }
+
+        /* ── TICKET ── */
+        .ticket {
+            max-width: 800px; margin: 0 auto;
+            background: #fff; border-radius: 14px;
+            box-shadow: 0 6px 24px rgba(0,0,0,.08);
+            overflow: hidden;
+        }
+        .ticket-head {
+            background: linear-gradient(135deg, #4f46e5, #6366f1, #8b5cf6);
+            color: #fff; padding: 1.75rem 2rem;
+            position: relative; overflow: hidden;
+        }
+        .ticket-head::before {
+            content: ''; position: absolute; top: -80px; right: -30px;
+            width: 200px; height: 200px; border-radius: 50%;
+            background: rgba(255,255,255,.1);
+        }
+        .ticket-head-row {
+            display: flex; justify-content: space-between;
+            align-items: center; position: relative; z-index: 1;
+            flex-wrap: wrap; gap: 1rem;
+        }
+        .ticket-brand { display: flex; align-items: center; gap: .65rem; }
+        .ticket-brand-ico {
+            width: 44px; height: 44px; border-radius: 12px;
+            background: rgba(255,255,255,.22); border: 1.5px solid rgba(255,255,255,.3);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+        }
+        .ticket-brand-name { font-size: 1rem; font-weight: 800; line-height: 1.2; }
+        .ticket-brand-sub { font-size: .72rem; opacity: .8; }
+
+        .ticket-code {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.25);
+            padding: .35rem .85rem; border-radius: 8px;
+            font-size: .85rem; font-weight: 700;
+        }
+
+        .ticket-status {
+            margin-top: 1.5rem; padding: .85rem 1.1rem;
+            background: rgba(255,255,255,.18);
+            border: 1px solid rgba(255,255,255,.25);
+            border-radius: 12px;
+            display: flex; align-items: center; gap: 1rem;
+            position: relative; z-index: 1;
+        }
+        .ts-ico {
+            width: 38px; height: 38px; border-radius: 10px;
+            background: rgba(255,255,255,.18);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; font-size: .95rem;
+        }
+        .ts-lbl { font-size: .65rem; font-weight: 700; opacity: .75; text-transform: uppercase; letter-spacing: .07em; }
+        .ts-val { font-size: 1rem; font-weight: 800; line-height: 1.2; margin-top: .1rem; }
+
+        /* Body */
+        .ticket-body { padding: 1.75rem 2rem; }
+
+        .section { margin-bottom: 1.5rem; }
+        .section:last-child { margin-bottom: 0; }
+        .section-title {
+            font-size: .68rem; font-weight: 700;
+            color: #94a3b8; text-transform: uppercase; letter-spacing: .07em;
+            padding-bottom: .55rem; border-bottom: 1px dashed #cbd5e1;
+            margin: 0 0 .85rem;
+            display: flex; align-items: center; gap: .45rem;
+        }
+        .section-title i { color: #4f46e5; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+
+        .person-box {
+            background: #f8fafc; border-radius: 10px;
+            padding: .85rem 1rem; border: 1px solid #e2e8f0;
+        }
+        .pb-lbl { font-size: .65rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; margin-bottom: .35rem; }
+        .pb-name { font-size: .95rem; font-weight: 800; color: #0f172a; margin-bottom: .1rem; }
+        .pb-meta { font-size: .75rem; color: #64748b; line-height: 1.4; }
+        .pb-meta div { display: flex; align-items: center; gap: .35rem; margin-top: .1rem; }
+        .pb-meta i { width: 12px; color: #94a3b8; font-size: .7rem; }
+
+        .info-cell {
+            background: #f8fafc; border-radius: 10px;
+            padding: .85rem; text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+        .ic-lbl { font-size: .62rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; }
+        .ic-val { font-size: 1rem; font-weight: 800; color: #0f172a; margin-top: .25rem; }
+
+        .total-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1rem 1.25rem; background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border: 1.5px solid #86efac; border-radius: 12px;
+        }
+        .total-lbl {
+            font-size: .85rem; font-weight: 700; color: #047857;
+            display: flex; align-items: center; gap: .45rem;
+        }
+        .total-val { font-size: 1.4rem; font-weight: 900; color: #047857; }
+
+        /* QR */
+        .qr-section {
+            display: flex; gap: 1.25rem; align-items: center;
+            padding: 1.25rem; background: #f8fafc;
+            border-radius: 12px; border: 1px solid #e2e8f0;
+        }
+        .qr-box { background: #fff; padding: .55rem; border-radius: 10px; flex-shrink: 0; }
+        .qr-info h6 { margin: 0 0 .35rem; font-size: .85rem; font-weight: 800; color: #0f172a; }
+        .qr-info p  { margin: 0; font-size: .78rem; color: #64748b; line-height: 1.45; }
+        .qr-url {
+            font-family: 'JetBrains Mono', monospace; font-size: .72rem;
+            color: #4f46e5; background: #e0e7ff;
+            padding: .25rem .55rem; border-radius: 5px;
+            display: inline-block; margin-top: .35rem;
+            word-break: break-all;
+        }
+
+        /* Footer */
+        .ticket-foot {
+            background: #f8fafc; border-top: 1px dashed #cbd5e1;
+            padding: 1rem 2rem; font-size: .72rem;
+            color: #94a3b8; text-align: center;
+        }
+        .ticket-foot strong { color: #475569; }
+
+        .barcode {
+            background: #0f172a; color: #fff;
+            padding: .45rem 1rem; border-radius: 8px;
+            font-family: 'Libre Barcode 39', 'JetBrains Mono', monospace;
+            font-size: 1.4rem; letter-spacing: .15em;
+            text-align: center; margin-top: 1rem;
+        }
+
+        /* ── Print styles ── */
+        @media print {
+            body { background: #fff; padding: 0; }
+            .toolbar, .qr-section button { display: none !important; }
+            .ticket {
+                box-shadow: none; border-radius: 0;
+                max-width: 100%; margin: 0;
+            }
+            @page { margin: 1cm; }
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <h1><i class="fas fa-receipt"></i> Ticket de encomienda</h1>
+        <div style="display:flex;gap:.55rem;">
+            <a href="{% url 'encomienda_detalle' encomienda.pk %}" class="btn btn-back">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+            <button onclick="window.print()" class="btn btn-print">
+                <i class="fas fa-print"></i> Imprimir
+            </button>
+        </div>
+    </div>
+
+    <div class="ticket">
+        <!-- HEAD -->
+        <div class="ticket-head">
+            <div class="ticket-head-row">
+                <div class="ticket-brand">
+                    <div class="ticket-brand-ico"><i class="fas fa-shipping-fast"></i></div>
+                    <div>
+                        <div class="ticket-brand-name">Sistema de Encomiendas</div>
+                        <div class="ticket-brand-sub">Comprobante de envío</div>
+                    </div>
+                </div>
+                <div class="ticket-code">{{ encomienda.codigo }}</div>
+            </div>
+
+            <div class="ticket-status">
+                <div class="ts-ico">
+                    {% if encomienda.estado == 'PE' %}<i class="fas fa-clock"></i>
+                    {% elif encomienda.estado == 'TR' %}<i class="fas fa-truck"></i>
+                    {% elif encomienda.estado == 'DE' %}<i class="fas fa-warehouse"></i>
+                    {% elif encomienda.estado == 'EN' %}<i class="fas fa-check-circle"></i>
+                    {% elif encomienda.estado == 'DV' %}<i class="fas fa-undo"></i>
+                    {% endif %}
+                </div>
+                <div style="flex:1;">
+                    <div class="ts-lbl">Estado actual</div>
+                    <div class="ts-val">{{ encomienda.get_estado_display }}</div>
+                </div>
+                <div style="text-align:right;">
+                    <div class="ts-lbl">Fecha de emisión</div>
+                    <div class="ts-val" style="font-size:.85rem;">{{ encomienda.fecha_registro|date:'d/m/Y H:i' }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BODY -->
+        <div class="ticket-body">
+
+            <!-- PERSONAS -->
+            <div class="section">
+                <h6 class="section-title"><i class="fas fa-users"></i> Remitente y Destinatario</h6>
+                <div class="grid-2">
+                    <div class="person-box">
+                        <div class="pb-lbl">📦 Remitente</div>
+                        <div class="pb-name">{{ encomienda.remitente.nombre_completo }}</div>
+                        <div class="pb-meta">
+                            <div><i class="fas fa-id-card"></i> {{ encomienda.remitente.tipo_doc }} {{ encomienda.remitente.nro_doc }}</div>
+                            {% if encomienda.remitente.telefono %}<div><i class="fas fa-phone"></i> {{ encomienda.remitente.telefono }}</div>{% endif %}
+                        </div>
+                    </div>
+                    <div class="person-box">
+                        <div class="pb-lbl">🏁 Destinatario</div>
+                        <div class="pb-name">{{ encomienda.destinatario.nombre_completo }}</div>
+                        <div class="pb-meta">
+                            <div><i class="fas fa-id-card"></i> {{ encomienda.destinatario.tipo_doc }} {{ encomienda.destinatario.nro_doc }}</div>
+                            {% if encomienda.destinatario.telefono %}<div><i class="fas fa-phone"></i> {{ encomienda.destinatario.telefono }}</div>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DETALLES -->
+            <div class="section">
+                <h6 class="section-title"><i class="fas fa-box-open"></i> Detalles del envío</h6>
+                <div class="grid-3">
+                    <div class="info-cell">
+                        <div class="ic-lbl"><i class="fas fa-route"></i> Ruta</div>
+                        <div class="ic-val" style="font-size:.82rem;">{{ encomienda.ruta.origen }} → {{ encomienda.ruta.destino }}</div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="ic-lbl"><i class="fas fa-weight-hanging"></i> Peso</div>
+                        <div class="ic-val">{{ encomienda.peso_kg }} kg</div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="ic-lbl"><i class="far fa-calendar-alt"></i> Entrega est.</div>
+                        <div class="ic-val" style="font-size:.85rem;">{{ encomienda.fecha_entrega_est|date:'d/m/Y'|default:'—' }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DESCRIPCIÓN -->
+            {% if encomienda.descripcion %}
+            <div class="section">
+                <h6 class="section-title"><i class="fas fa-file-alt"></i> Descripción del paquete</h6>
+                <div style="background:#f8fafc;border-radius:10px;padding:.85rem 1rem;border:1px solid #e2e8f0;font-size:.85rem;color:#475569;line-height:1.5;">
+                    {{ encomienda.descripcion }}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- TOTAL -->
+            <div class="section">
+                <h6 class="section-title"><i class="fas fa-receipt"></i> Costo del envío</h6>
+                <div class="total-row">
+                    <div class="total-lbl"><i class="fas fa-dollar-sign"></i> Total a pagar</div>
+                    <div class="total-val">S/ {{ encomienda.costo_envio|floatformat:2 }}</div>
+                </div>
+            </div>
+
+            <!-- QR + tracking -->
+            <div class="section">
+                <h6 class="section-title"><i class="fas fa-qrcode"></i> Seguimiento del paquete</h6>
+                <div class="qr-section">
+                    <div class="qr-box" id="qrcode-ticket"></div>
+                    <div class="qr-info">
+                        <h6>Rastrea tu paquete en tiempo real</h6>
+                        <p>Escanea el código QR con tu celular para ver el estado del paquete en vivo.</p>
+                        <div class="qr-url" id="qr-url"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- FOOT -->
+        <div class="ticket-foot">
+            <strong>Conserve este comprobante</strong> · Sistema de Encomiendas © 2026 · Documento generado el {{ encomienda.fecha_registro|date:'d/m/Y H:i' }}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script>
+        const trackingUrl = `${window.location.origin}/track/{{ encomienda.codigo }}/`;
+        const qr = qrcode(0, 'M');
+        qr.addData(trackingUrl);
+        qr.make();
+        document.getElementById('qrcode-ticket').innerHTML = qr.createImgTag(4, 0);
+        document.getElementById('qr-url').textContent = trackingUrl;
+    </script>
+</body>
+</html>
